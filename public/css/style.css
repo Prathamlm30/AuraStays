@@ -1,0 +1,341 @@
+
+body {
+    font-family: "Plus Jakarta Sans", sans-serif !important;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container {
+    flex: 1;
+}
+
+/*header*/
+.navbar {
+    height: 5rem;
+    background-color: white;
+}
+
+.fa-compass {
+    color: #fe424d;
+    font-size: 2rem;
+}
+
+.nav-link {
+    color: #222222 !important;
+}
+
+/*footer*/
+.f-info-links a {
+    text-decoration: none;
+    color: #222222;
+}
+
+.f-info-links a:hover {
+    text-decoration: underline;
+}
+
+.f-info-links, .f-info-socials, .f-info-brand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.f-info-socials i {
+    font-size: 1.3rem;
+    margin-right: 1rem;
+}
+
+.f-info {
+    text-align: center;
+    height: 8rem;
+    background-color: #ebebeb;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: space-evenly;
+}
+
+/* cards */
+.listing-card {
+    border: none !important;
+    margin-bottom: 2rem;
+}
+
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover !important;
+}
+
+.card-body {
+    padding: 0 !important;
+}
+
+.card-text p {
+    font-weight: 400 !important;
+}
+
+.listing-link {
+    text-decoration: none;
+}
+
+.card-img-overlay {
+    opacity: 0;
+}
+
+.card-img-overlay:hover {
+    opacity: 0.2;
+    background-color: white;
+}
+
+.add-btn, .edit-btn {
+    background-color: #fe424d !important;
+    border: none !important;
+}
+
+.show-img {
+    height: 30vh;
+}
+
+.btns {
+    display: flex;
+}
+
+.show-card {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* Card Hover Effects */
+.listing-card {
+    border: none !important;
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1rem;
+    overflow: hidden; /* Keeps the zooming image inside the borders */
+}
+
+.listing-card:hover {
+    transform: translateY(-5px); /* Lifts the card up slightly */
+    box-shadow: 0 12px 24px rgba(0,0,0,0.1); /* Adds a soft premium shadow */
+}
+
+.card-img-top {
+    border-radius: 1rem !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease; /* Smooth image zoom */
+}
+
+.listing-card:hover .card-img-top {
+    transform: scale(1.05); /* Zooms the image in slightly on hover */
+}
+
+/* Removes the default close button ('x') from the popup */
+.leaflet-popup-close-button {
+    display: none !important;
+}
+
+/* Styles the popup box to look soft and rounded */
+.leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    font-weight: 500;
+    padding: 2px;
+}
+
+/* Styles the search input to be rounded */
+.search-inp {
+    border-radius: 25px !important;
+    padding: 0.5rem 1.5rem;
+}
+
+/* Styles the search button to be a side-by-side red pill */
+.search-btn {
+    background-color: #fe424d !important;
+    color: white !important;
+    border-radius: 25px !important;
+    padding: 0.5rem 1.5rem !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem; /* Adds space between the magnifying glass and the word "Search" */
+    border: none;
+    font-weight: 500;
+}
+
+.search-btn:hover {
+    background-color: #e03540 !important;
+    color: white !important;
+}
+
+/* AI Integration Features */
+.ai-summary-container {
+    background-color: #f8f9fa;
+    border-radius: 15px;
+    border: 1px solid #e9ecef;
+}
+
+/* Updated to your exact tangy orange brand color */
+.ai-icon {
+    color: #fe424d; 
+}
+
+/* Universal AI Button Styling */
+.ai-btn {
+    background-color: #fe424d !important;
+    color: white !important;
+    border-radius: 20px !important;
+    border: none !important;
+    font-weight: 500;
+}
+
+.ai-btn:hover {
+    background-color: #e03540 !important;
+}
+
+.ai-output-area {
+    display: none;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+.ai-loader {
+    display: none;
+}
+
+/* AI Trip Planner Specifics */
+.ai-planner-container {
+    background-color: #fcfcfc;
+}
+
+.ai-planner-loader-text {
+    color: #fe424d;
+    font-weight: 500;
+}
+
+/* Host Reply Box Styling */
+.host-reply-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #fe424d; /* Matches brand color */
+}
+
+.host-reply-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.host-reply-body {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.host-reply-delete-btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.ai-reply-textarea {
+    font-size: 0.9rem;
+}
+
+@keyframes smoothFadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.ai-output-area, #itinerary-output {
+    animation: smoothFadeIn 0.4s ease forwards;
+}
+
+
+/* =========================================
+   USER DASHBOARD & COMPONENT STYLES
+========================================= */
+
+/* Reusable UI Components */
+.card-rounded {
+    border-radius: 1.5rem;
+}
+
+.btn-brand {
+    background-color: #fe424d;
+    color: #fff;
+    border-radius: 0.75rem;
+    border: none;
+    transition: background-color 0.2s ease;
+}
+
+.btn-brand:hover {
+    background-color: #e03540;
+    color: #fff;
+}
+
+.btn-pill {
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+}
+
+.btn-pill-sm {
+    border-radius: 25px;
+    padding: 10px 25px;
+}
+
+/* Profile Page Avatar */
+.profile-avatar-lg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #fe424d;
+    color: white;
+    font-size: 3rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Empty State Pages (Trips/Wishlists) */
+.empty-state-icon {
+    color: #dddddd;
+    font-size: 5rem;
+}
+
+/* Heart Button (Listing Show Page) */
+.heart-btn {
+    width: 45px;
+    height: 45px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heart-btn:active {
+    transform: scale(0.85);
+}
+
+/* Card Heart Button (Floating on images) */
+.card-heart-btn {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(4px);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+}
+
+.card-heart-btn:active {
+    transform: scale(0.85);
+}
+
+.card-heart-btn i {
+    font-size: 1.15rem;
+}

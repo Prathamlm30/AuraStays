@@ -1,0 +1,54 @@
+<% layout("/layouts/boilerPlate") %>
+
+<div class="row mt-5 justify-content-center mb-5">
+    <div class="col-11 col-md-8 col-lg-5">
+        <div class="card shadow-lg border-0" style="border-radius: 1.5rem;">
+            <div class="card-body p-5">
+                
+                <div class="text-center mb-4">
+                    <div class="mb-3">
+                        <i class="fa-regular fa-compass" style="color: #fe424d; font-size: 3rem;"></i>
+                    </div>
+                    <h3 class="fw-bold">Welcome back to AirBNB</h3>
+                    <p class="text-muted">Log in to plan your next trip.</p>
+                </div>
+
+                <form action="/login" method="POST" class="needs-validation" novalidate>
+                    <!-- Floating Label for Username -->
+                    <div class="form-floating mb-3">
+                        <input name="username" id="username" type="text" class="form-control" placeholder="Username" style="border-radius: 0.75rem;" required>
+                        <label for="username">Username</label>
+                    </div>
+                    
+                    <!-- Floating Label for Password -->
+                    <div class="form-floating mb-4">
+                        <input name="password" id="password" type="password" class="form-control" placeholder="Password" style="border-radius: 0.75rem;" required>
+                        <label for="password">Password</label>
+                    </div>
+                    
+                    <button class="btn w-100 py-3 text-white fw-bold mb-3" style="background-color: #fe424d; border-radius: 0.75rem; font-size: 1.1rem; border: none;">
+                        Continue
+                    </button>
+                </form>
+
+                <!-- Preparation for OAuth (Feature 2) -->
+                <div class="d-flex align-items-center my-4">
+                    <hr class="flex-grow-1">
+                    <span class="mx-3 text-muted" style="font-size: 0.9rem;">or</span>
+                    <hr class="flex-grow-1">
+                </div>
+
+                <a href="/auth/google" class="btn btn-outline-dark w-100 py-2 fw-semibold d-flex justify-content-center align-items-center gap-2 mb-4" style="border-radius: 0.75rem;">
+                    <i class="fa-brands fa-google text-danger"></i> Continue with Google
+                </a>
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Don't have an account? 
+                        <a href="/signup" style="color: #fe424d; text-decoration: none; font-weight: 600;">Sign up</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

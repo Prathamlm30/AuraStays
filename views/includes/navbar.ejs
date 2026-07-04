@@ -1,0 +1,156 @@
+<style>
+  /* Existing Search Bar Styles */
+  .search-btn {
+    background-color: #fe424d;
+    color: #fff;
+    border-radius: 25px;
+    padding: 0 1rem 0 1rem;
+  }
+  .search-btn:hover {
+    background-color: #e03540;
+    color: #fff;
+  }
+  .search-btn i {
+    display: inline;
+    margin-right: 0.5rem;
+  }
+  .search-inp {
+    width: 24rem;
+    border-radius: 25px;
+    padding: 0.5rem 3rem 0.5rem 3rem;
+  }
+
+  /* NEW: Modern Profile Pill Styles */
+  .profile-pill {
+    border: 1px solid #dddddd;
+    border-radius: 30px;
+    padding: 5px 12px 5px 5px !important;
+    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    background-color: #ffffff;
+    cursor: pointer;
+  }
+  .profile-pill:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .profile-pill:active {
+    transform: scale(0.97);
+  }
+  
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #fe424d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  /* NEW: Dropdown Menu Aesthetics */
+  .profile-dropdown {
+    border-radius: 1rem;
+    min-width: 240px;
+    border: 1px solid #ebebeb;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 0.5rem 0;
+    margin-top: 10px !important;
+  }
+  .profile-dropdown .dropdown-item {
+    padding: 0.7rem 1.5rem;
+    font-weight: 500;
+    color: #444;
+    transition: background-color 0.2s;
+  }
+  .profile-dropdown .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #222;
+  }
+  .profile-dropdown .dropdown-divider {
+    border-color: #ebebeb;
+  }
+</style>
+
+<nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <a class="nav-link" href="/listings">Explore</a>
+      </div>
+
+    <% if (currentPath !== '/login' && currentPath !== '/signup') { %>
+      <div class="navbar-nav ms-auto">
+        <form class="d-flex align-items-center" role="search" action="/listings/search" method="GET">
+          <input 
+              class="form-control me-2 search-inp" 
+              type="search" 
+              placeholder="Search destinations or vibes..." 
+              name="q" 
+              value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>"
+          >
+          <button class="btn search-btn" type="submit">
+              <i class="fa-solid fa-magnifying-glass"></i> Search
+          </button>
+      </form>
+      </div>
+    <% } %>
+
+      <div class="navbar-nav ms-auto align-items-center">
+        <a class="nav-link me-3 fw-semibold" style="color: #222;" href="/listings/new">Become a Host</a>
+        
+        <% if(!currUser) { %>
+          <a class="nav-link" href="/signup"><b>Sign Up</b></a>
+          <a class="nav-link" href="/login"><b>Login</b></a>
+        <% } %>
+        
+        <% if(currUser) { %>
+          <div class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 profile-pill" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-bars text-muted ms-2 fs-6"></i>
+                <div class="user-avatar">
+                    <%= currUser.username.charAt(0).toUpperCase() %>
+                </div>
+            </a>
+            
+            <ul class="dropdown-menu dropdown-menu-end profile-dropdown">
+                <li class="px-4 py-3 border-bottom mb-2">
+                    <div class="fw-bold fs-6 text-dark" style="text-transform: capitalize;"><%= currUser.username %></div>
+                    <div class="text-muted" style="font-size: 0.85rem;"><%= currUser.email %></div>
+                </li>
+                
+                <li>
+                  <a class="dropdown-item" href="/profile">
+                    <i class="fa-regular fa-user me-2 text-muted"></i> My Profile
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/trips">
+                    <i class="fa-solid fa-suitcase-rolling me-2 text-muted"></i> My Trips
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/wishlists">
+                    <i class="fa-regular fa-heart me-2 text-muted"></i> Wishlists
+                  </a>
+                </li>
+                
+                <li><hr class="dropdown-divider my-2"></li>
+                
+                <li>
+                  <a class="dropdown-item fw-bold" href="/logout" style="color: #fe424d;">
+                    <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Log out
+                  </a>
+                </li>
+            </ul>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</nav>
