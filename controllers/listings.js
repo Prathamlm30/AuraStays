@@ -1,4 +1,4 @@
-const Listing = require("../models/Listing.js");
+const Listing = require("../Models/Listing.js");
 
 
 
