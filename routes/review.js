@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router({mergeParams: true});
 const wrapAsync = require("../utils/wrapAsync.js");
-const Review = require("../models/review.js");
-const Listing = require("../models/Listing.js");
+const Review = require("../Models/review.js");
+const Listing = require("../Models/Listing.js");
 
 // IMPORT ALL NEEDED MIDDLEWARE HERE
 const {validateReview, isLoggedIn, isReviewAuthor, isOwner} = require("../middleware.js");
