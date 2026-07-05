@@ -23,7 +23,7 @@ const userRouter = require("./routes/user.js");
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
-const MongoStore = require('connect-mongo');
+const MongoStore = require('connect-mongo')(session);
 
 main()
     .then((res) => {
@@ -45,12 +45,10 @@ app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 // 1. Create the Mongo Store using your cloud database and secret
-const store = MongoStore.create({
-    mongoUrl: dbUrl,
-    crypto: {
-        secret: process.env.SECRET,
-    },
-    touchAfter: 24 * 3600, // Lazy session update: only update once in 24 hrs unless data changes
+const store = new MongoStore({
+    url: dbUrl,
+    secret: process.env.SECRET,
+    touchAfter: 24 * 3600,
 });
 
 store.on("error", (err) => {

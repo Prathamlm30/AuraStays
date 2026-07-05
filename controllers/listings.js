@@ -54,7 +54,7 @@ module.exports.createListing = async (req,res) => {
     // 2. Fetch with a USER-AGENT header so OpenStreetMap doesn't block us!
     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`, {
         headers: {
-            "User-Agent": "Wanderlust_Airbnb_Clone/1.0" // This acts as your app's ID card
+            "User-Agent": "AuraStays/1.0" // This acts as your app's ID card
         }
     });
     
@@ -117,7 +117,7 @@ module.exports.updateListing = async(req,res) => {
     // 2. Fetch new coordinates with the User-Agent header to prevent "Access Denied"
     const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`, {
         headers: {
-            "User-Agent": "Wanderlust_Airbnb_Clone/1.0"
+            "User-Agent": "AuraStays/1.0" // This acts as your app's ID card
         }
     });
     

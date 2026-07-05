@@ -61,7 +61,7 @@ module.exports.verifyOtp = async (req, res, next) => {
                 // Clear the temporary session data
                 delete req.session.pendingUser;
                 
-                req.flash("success", "Welcome to AirBNB! Account verified successfully.");
+                req.flash("success", "Welcome to AuraStays! Account verified successfully.");
                 res.redirect("/listings");
             });
         } else {
@@ -80,7 +80,7 @@ module.exports.renderLoginForm = (req,res) => {
 };
 
 module.exports.login = async(req,res) => {
-    req.flash("success","Welcome back to AirBNB!");
+    req.flash("success","Welcome back to AuraStays!");
     let redirectUrl = res.locals.redirectUrl || "/listings";
     res.redirect(redirectUrl);
 };

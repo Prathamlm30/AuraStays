@@ -339,3 +339,27 @@ body {
 .card-heart-btn i {
     font-size: 1.15rem;
 }
+
+/* Footer Styles */
+.footer-link {
+    color: #6c757d;
+    text-decoration: none;
+    transition: color 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.footer-link:hover {
+    color: #222222;
+    text-decoration: underline;
+}
+
+.social-icon {
+    color: #222222;
+    font-size: 1.25rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.social-icon:hover {
+    color: #fe424d;
+    transform: scale(1.1);
+}

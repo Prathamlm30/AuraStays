@@ -71,11 +71,62 @@
   .profile-dropdown .dropdown-divider {
     border-color: #ebebeb;
   }
+
+/* OPTION 2: Liquid Titanium */
+.brand-titanium {
+    background: linear-gradient(
+        90deg,
+        #fe424d 0%,
+        #fe424d 35%,
+        #ffffff 50%,
+        #fe424d 65%,
+        #fe424d 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+    animation: titaniumShine 2.5s infinite linear;
+}
+
+@keyframes titaniumShine {
+    0% { background-position: -100% center; }
+    100% { background-position: 100% center; }
+}
+
+.aura-sparkle {
+    animation: starPulse 2s infinite alternate ease-in-out;
+    transform-origin: 19px 5px;
+}
+
+@keyframes starPulse {
+    0% { transform: scale(0.8); opacity: 0.6; }
+    100% { transform: scale(1.2); opacity: 1; }
+}
+
+
+
+
+
+/* Optional: Slight hover lift for the whole brand section */
+.navbar-brand {
+    transition: transform 0.3s ease;
+}
+.navbar-brand:hover {
+    transform: translateY(-1px);
+}
 </style>
 
 <nav class="navbar navbar-expand-md bg-body-light border-bottom sticky-top">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/listings"><i class="fa-regular fa-compass"></i></a>
+    <a class="navbar-brand d-flex align-items-center" href="/listings">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#fe424d" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10L12 3L21 10" stroke-width="2.5" />
+            <path d="M7 11V20C7 20.5523 7.44772 21 8 21H16C16.5523 21 17 20.5523 17 20V11" stroke-width="2.5" />
+            <path class="aura-sparkle" d="M19 2 L19.5 3.5 L21 4 L19.5 4.5 L19 6 L18.5 4.5 L17 4 L18.5 3.5 Z" fill="#fe424d" stroke="none" />
+        </svg>
+        <span class="fw-bolder ms-2 brand-titanium" style="font-size: 1.5rem; letter-spacing: -0.8px;">AuraStays</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
       <span class="navbar-toggler-icon"></span>
     </button>

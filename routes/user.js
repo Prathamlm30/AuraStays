@@ -43,7 +43,7 @@ router.get("/auth/google/callback",
     }),
     (req, res) => {
         // If successful, flash a welcome message
-        req.flash("success", "Welcome to AirBNB! Successfully logged in with Google.");
+        req.flash("success", "Welcome to AuraStays! Successfully logged in with Google.");
         
         // Smart Redirect: Send them back to where they were trying to go, or default to listings
         let redirectUrl = res.locals.redirectUrl || "/listings";

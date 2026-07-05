@@ -3,36 +3,60 @@ const initData = require("./data.js");
 const Listing = require("../models/listing.js");
 const User = require("../models/user.js"); 
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/airbnb"; 
+// NEW: Load environment variables from the root directory (.env is one folder up)
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config({ path: "../.env" });
+}
+
+// NEW: Use the Atlas connection string from your hidden .env file
+const dbUrl = process.env.ATLASDB_URL; 
 
 main()
   .then(() => {
-    console.log("connected to DB");
+    console.log("Successfully connected to MongoDB Atlas!");
+    // Trigger seeding only after a confirmed cloud connection
+    initDB();
   })
   .catch((err) => {
-    console.log(err);
+    console.log("Database connection error:", err);
   });
 
 async function main() {
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(dbUrl);
 }
 
 const initDB = async () => {
-  await Listing.deleteMany({});
-  
-  // DEBUGGER: Let's see exactly what Node is reading from data.js!
-  console.log("Data check - First listing geometry is:", initData.data[0].geometry);
+  try {
+    // 1. Clear out any existing listings in the cloud database
+    await Listing.deleteMany({});
+    
+    // 2. SPECIFIC OWNER FIX: Grab the exact user by their username
+    const adminUser = await User.findOne({ username: "pratham" }); 
 
-  initData.data = initData.data.map((obj) => ({
-      ...obj,
-      owner: "6a3d91ee3fe445f2463892e7",
-  }));
+    // Safety check
+    if (!adminUser) {
+        console.log("❌ ERROR: User 'pratham' not found in the database!");
+        mongoose.connection.close();
+        return;
+    }
 
-  await Listing.insertMany(initData.data);
-  console.log("Data was initialized with Owners and Geometries!");
-  
-  // FIX: Close the connection so the terminal doesn't hang and fail!
-  mongoose.connection.close(); 
+    console.log(`✅ Found owner: ${adminUser.username} (ID: ${adminUser._id})`);
+
+    // 3. Map the specific owner ID to each listing
+    initData.data = initData.data.map((obj) => ({
+        ...obj,
+        owner: adminUser._id, 
+    }));
+
+    // 4. Insert the sample data into Atlas
+    await Listing.insertMany(initData.data);
+    console.log("☁️ Cloud database populated with Owners and Geometries!");
+
+  } catch (error) {
+    console.log("Seeding failed:", error);
+  } finally {
+    // 5. Safely close the cloud connection
+    mongoose.connection.close(); 
+    console.log("Cloud connection closed gracefully.");
+  }
 };
-
-initDB();
