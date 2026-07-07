@@ -1,18 +1,57 @@
 <% layout("/layouts/boilerPlate") %>
 
-<div class="row mt-5">
-    <div class="col-12 text-center mt-5">
-        
-        <div class="mb-4">
-            <i class="fa-solid fa-suitcase-rolling empty-state-icon"></i>
+<div class="container mt-5 mb-5">
+    <h2 class="fw-bold mb-4">My Trips</h2>
+
+    <% if (trips.length === 0) { %>
+        <!-- Empty State UI -->
+        <div class="text-center mt-5 mb-5 pt-5 pb-5">
+            <i class="fa-solid fa-suitcase-rolling mb-3" style="font-size: 4rem; color: #dddddd;"></i>
+            <h3 class="fw-bold">No trips booked... yet!</h3>
+            <p class="text-muted">Time to dust off your bags and start planning your next adventure.</p>
+            <a href="/listings" class="btn btn-dark fw-bold px-4 py-2 mt-2">Start Searching</a>
         </div>
-        
-        <h2 class="fw-bold">No trips booked... yet!</h2>
-        <p class="text-muted mb-4">Time to dust off your bags and start planning your next adventure.</p>
-        
-        <a href="/listings" class="btn btn-dark fw-bold shadow-sm btn-pill">
-            Start Searching
-        </a>
-        
-    </div>
+    <% } else { %>
+        <!-- Active Bookings Grid UI -->
+        <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1 g-4">
+            <% for (let trip of trips) { %>
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
+                        
+                        <!-- Trip Date Badge overlay -->
+                        <div class="position-absolute top-0 start-0 m-3 bg-white px-3 py-1 rounded-pill shadow-sm fw-bold" style="z-index: 10; font-size: 0.85rem;">
+                            <%= trip.checkIn.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %> - 
+                            <%= trip.checkOut.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+                        </div>
+                        
+                        <!-- Image Link ONLY (Keeps the button separate) -->
+                        <a href="/listings/<%= trip.listing._id %>" class="text-decoration-none text-dark">
+                            <img src="<%= trip.listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 15rem; object-fit: cover;">
+                        </a>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <!-- Text Link ONLY -->
+                            <a href="/listings/<%= trip.listing._id %>" class="text-decoration-none text-dark">
+                                <h5 class="card-title fw-bold mb-1"><%= trip.listing.title %></h5>
+                                <p class="card-text text-muted mb-2"><i class="fa-solid fa-location-dot me-1"></i> <%= trip.listing.location %>, <%= trip.listing.country %></p>
+                            </a>
+                            
+                            <hr class="my-2">
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-auto mb-3">
+                                <span class="text-muted" style="font-size: 0.9rem;">Total Paid</span>
+                                <span class="fw-bold fs-5">&#8377; <%= trip.totalPrice.toLocaleString("en-IN") %></span>
+                            </div>
+
+                            <!-- Cancel Reservation Form -->
+                            <form method="POST" action="/bookings/<%= trip._id %>?_method=DELETE" class="m-0" onsubmit="return confirm('Are you sure you want to cancel this reservation? This action cannot be undone.');">
+                                <button type="submit" class="btn btn-outline-danger w-100 fw-bold" style="border-radius: 0.75rem;">Cancel Booking</button>
+                            </form>
+                        </div>
+                        
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
 </div>

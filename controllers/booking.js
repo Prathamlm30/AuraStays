@@ -57,3 +57,25 @@ module.exports.renderTrips = async (req, res) => {
                                .sort({ checkIn: 1 }); // Sort by upcoming
     res.render("users/trips.ejs", { trips });
 };
+
+// 4. Cancel a Booking
+module.exports.destroyBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const booking = await Booking.findById(id);
+        
+        // Security check: Ensure the logged-in user owns this trip
+        if (!booking.user.equals(req.user._id)) {
+            req.flash("error", "You don't have permission to cancel this trip.");
+            return res.redirect("/trips");
+        }
+        
+        await Booking.findByIdAndDelete(id);
+        req.flash("success", "Reservation cancelled successfully. We hope you travel with us again!");
+        res.redirect("/trips");
+    } catch (err) {
+        console.error("Cancellation Error:", err);
+        req.flash("error", "Could not cancel the reservation.");
+        res.redirect("/trips");
+    }
+};

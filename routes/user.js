@@ -60,5 +60,7 @@ router.get("/wishlists", isLoggedIn, userController.renderWishlists);
 router.post("/listings/:id/wishlist", isLoggedIn, wrapAsync(userController.toggleWishlist));
 
 router.get("/trips", isLoggedIn, wrapAsync(bookingController.renderTrips));
+// NEW: Delete a reservation
+router.delete("/bookings/:id", isLoggedIn, wrapAsync(bookingController.destroyBooking));
 
 module.exports = router;
