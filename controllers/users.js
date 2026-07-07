@@ -1,5 +1,6 @@
 const User = require("../Models/user.js");
 const sendOTP = require("../utils/email");
+const Booking = require("../Models/Booking.js");
 
 module.exports.renderSignupForm = (req,res) => {
     res.render("users/signup.ejs");
@@ -97,7 +98,17 @@ module.exports.logout = (req,res,next) => {
 
 // 1. Render Profile Page
 module.exports.renderProfile = async (req, res) => {
-    res.render("users/profile.ejs");
+    try {
+        // Ask the database: "How many bookings match this user's ID?"
+        const tripCount = await Booking.countDocuments({ user: req.user._id });
+        
+        // Pass that count to the EJS template
+        res.render("users/profile.ejs", { tripCount });
+    } catch (err) {
+        console.error(err);
+        req.flash("error", "Could not load profile data.");
+        res.redirect("/listings");
+    }
 };
 
 // 2. Render Trips Page (Placeholder for future Stripe integration)
