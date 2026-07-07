@@ -1,5 +1,20 @@
 <% layout("/layouts/boilerPlate") %>
 
+<style>
+    /* Custom AuraStays Cancel Button */
+    .btn-cancel-trip {
+        color: #fe424d;
+        border: 1.5px solid #fe424d;
+        background-color: transparent;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease-in-out;
+    }
+    .btn-cancel-trip:hover {
+        background-color: #fe424d;
+        color: white;
+    }
+</style>
+
 <div class="container mt-5 mb-5">
     <h2 class="fw-bold mb-4">My Trips</h2>
 
@@ -24,7 +39,7 @@
                             <%= trip.checkOut.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
                         </div>
                         
-                        <!-- Image Link ONLY (Keeps the button separate) -->
+                        <!-- Image Link ONLY -->
                         <a href="/listings/<%= trip.listing._id %>" class="text-decoration-none text-dark">
                             <img src="<%= trip.listing.image.url %>" class="card-img-top" alt="listing_image" style="height: 15rem; object-fit: cover;">
                         </a>
@@ -44,8 +59,8 @@
                             </div>
 
                             <!-- Cancel Reservation Form -->
-                            <form method="POST" action="/bookings/<%= trip._id %>?_method=DELETE" class="m-0 mt-2" onsubmit="return confirm('Are you sure you want to cancel this reservation? This action cannot be undone.');">
-                                <button type="submit" class="btn w-100 fw-bold shadow-none" style="border: 1.5px solid #fe424d; color: #fe424d; background-color: white; border-radius: 0.75rem;">Cancel Booking</button>
+                            <form method="POST" action="/bookings/<%= trip._id %>?_method=DELETE" class="m-0 mt-1 mb-1" onsubmit="return confirm('Are you sure you want to cancel this reservation? This action cannot be undone.');">
+                                <button type="submit" class="btn w-100 fw-bold shadow-none btn-cancel-trip">Cancel Booking</button>
                             </form>
                         </div>
                         
