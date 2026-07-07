@@ -317,7 +317,7 @@ module.exports.searchListings = async (req, res) => {
         }
 
         const allListings = await Listing.find(dbQuery);
-        res.render("listings/index.ejs", { allListings });
+        res.render("listings/index.ejs", { allListings, searchQuery});
 
     } catch (error) {
         console.error("Semantic Search Failure, dropping back to traditional text matching:", error);
@@ -333,7 +333,7 @@ module.exports.searchListings = async (req, res) => {
                     { description: { $regex: standardQuery, $options: "i" } }
                 ]
             });
-            return res.render("listings/index.ejs", { allListings: fallbackListings });
+            return res.render("listings/index.ejs", { allListings: fallbackListings, searchQuery: standardQuery });
         } catch (fallbackError) {
             req.flash("error", "Search is temporarily unavailable.");
             res.redirect("/listings");
