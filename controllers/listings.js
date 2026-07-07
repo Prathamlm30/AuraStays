@@ -256,76 +256,86 @@ module.exports.searchListings = async (req, res) => {
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+        // THE GENERIC SEMANTIC PROMPT
         const prompt = `
-            You are a backend parsing engine for a travel booking platform. 
-            A user has entered the following search query: "${searchQuery}"
+            You are an advanced semantic query parsing engine for a travel platform.
+            The user has typed this natural language search request: "${searchQuery}"
             
-            Your job is to extract the intended location and the property category.
-            The category MUST perfectly match one of these exact strings (case-sensitive): 
-            "Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic", "Domes", "Boats".
+            Analyze the request and break it down into the following structural elements:
+            1. "location": A specific city, state, or country if explicitly named (otherwise "").
+            2. "category": Map the request to exactly ONE of these specific database categories if it fits the vibe: "Trending", "Rooms", "Iconic Cities", "Mountains", "Castles", "Amazing Pools", "Camping", "Farms", "Arctic", "Domes", "Boats" (otherwise "").
+            3. "tags": Generate an array of 3 to 5 generic, descriptive single-word keywords, synonyms, or features that capture the essence, target audience, or activity described in the query (e.g., for kids -> ["kids", "family", "fun", "playground", "children"]; for peace -> ["quiet", "peaceful", "nature", "calm"]). Keep them generic.
             
-            If you cannot determine a location, leave it as an empty string "".
-            If you cannot determine a category from the vibe, leave it as an empty string "".
-            
-            Respond STRICTLY with a valid JSON object in this exact format:
+            Respond STRICTLY with a valid JSON object in this exact format, with no markdown formatting:
             {
-                "location": "extracted location",
-                "category": "extracted category"
+                "location": "",
+                "category": "",
+                "tags": []
             }
         `;
 
         const result = await model.generateContent(prompt);
         let responseText = await result.response.text();
         
-        console.log("\n--- GEMINI RAW OUTPUT ---");
-        console.log(responseText);
-        
-        // AGGRESSIVE JSON CLEANING: Find exactly the {} brackets and ignore everything else
+        // Dynamic JSON isolation
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
-            throw new Error("Gemini did not return valid JSON structure.");
+            throw new Error("Invalid response format from semantic engine.");
         }
         
         const aiData = JSON.parse(jsonMatch[0]);
-        console.log("--- PARSED JSON DATA ---");
-        console.log(aiData);
+        console.log("--- SEMANTIC SEARCH PARSED DATA ---", aiData);
         
-        let dbQuery = {};
+        // Build the dynamic MongoDB query conditions array
+        let conditions = [];
         
+        // Match location if extracted
         if (aiData.location) {
-            dbQuery.location = { $regex: aiData.location, $options: "i" };
+            conditions.push({ location: { $regex: aiData.location, $options: "i" } });
+            conditions.push({ country: { $regex: aiData.location, $options: "i" } });
         }
         
+        // Match explicit category if extracted
         if (aiData.category) {
-            dbQuery.category = aiData.category;
+            conditions.push({ category: aiData.category });
+        }
+
+        // DYNAMIC TAG SEARCH: Loop through every generated semantic tag
+        // and search for them inside both the Title and Description fields
+        if (aiData.tags && aiData.tags.length > 0) {
+            aiData.tags.forEach(tag => {
+                conditions.push({ title: { $regex: tag, $options: "i" } });
+                conditions.push({ description: { $regex: tag, $options: "i" } });
+                conditions.push({ category: { $regex: tag, $options: "i" } });
+            });
+        }
+
+        // Construct final database query
+        let dbQuery = {};
+        if (conditions.length > 0) {
+            dbQuery = { $or: conditions };
         }
 
         const allListings = await Listing.find(dbQuery);
         res.render("listings/index.ejs", { allListings });
 
     } catch (error) {
-        console.log("\n================ AI SEARCH ERROR (FALLING BACK TO STANDARD SEARCH) ================");
-        console.error(error.message || error);
-        console.log("===================================================================================\n");
+        console.error("Semantic Search Failure, dropping back to traditional text matching:", error);
         
-        // GRACEFUL DEGRADATION: If the AI fails (rate limit, offline, etc.), 
-        // fall back to a standard MongoDB text search on the location and country!
+        // Graceful Failback: execute a standard text regex over main fields if AI fails
         try {
             const standardQuery = req.query.q;
             const fallbackListings = await Listing.find({
                 $or: [
                     { location: { $regex: standardQuery, $options: "i" } },
                     { country: { $regex: standardQuery, $options: "i" } },
-                    { title: { $regex: standardQuery, $options: "i" } }
+                    { title: { $regex: standardQuery, $options: "i" } },
+                    { description: { $regex: standardQuery, $options: "i" } }
                 ]
             });
-            
-            // Render the results, but let the user know it's a standard search
-            req.flash("success", "AI is currently busy. Showing standard search results.");
             return res.render("listings/index.ejs", { allListings: fallbackListings });
-            
         } catch (fallbackError) {
-            req.flash("error", "Search completely failed. Please try again later.");
+            req.flash("error", "Search is temporarily unavailable.");
             res.redirect("/listings");
         }
     }
