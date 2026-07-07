@@ -1,0 +1,13 @@
+/* AuraStays Custom Calendar Theme */
+.flatpickr-day.selected, 
+.flatpickr-day.startRange, 
+.flatpickr-day.endRange {
+    background: #222222 !important;
+    border-color: #222222 !important;
+}
+
+.flatpickr-day.inRange {
+    background: #f7f7f7 !important;
+    border-color: #f7f7f7 !important;
+    box-shadow: -5px 0 0 #f7f7f7, 5px 0 0 #f7f7f7 !important;
+}

@@ -8,6 +8,8 @@ const multer = require("multer");
 const {storage} = require("../cloudConfig.js");
 const upload = multer({storage});
 
+const bookingController = require("../controllers/bookings.js");
+
 router.route("/")
     //index route
     .get(wrapAsync(listingController.index))
@@ -26,6 +28,12 @@ router.get("/:id/ai-itinerary", wrapAsync(listingController.getAITripItinerary))
 // NEW: AI Natural Language Search Route
 // MUST GO ABOVE router.route("/:id")
 router.get("/search", wrapAsync(listingController.searchListings));
+
+// Fetch booked dates for Flatpickr
+router.get("/:id/booked-dates", wrapAsync(bookingController.getBookedDates));
+
+// Submit a reservation
+router.post("/:id/bookings", isLoggedIn, wrapAsync(bookingController.createBooking));
 
 router.route("/:id")
     //show route

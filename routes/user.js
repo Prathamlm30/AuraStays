@@ -5,6 +5,7 @@ const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
 const { saveRedirectUrl, isLoggedIn} = require("../middleware.js");
 const userController = require("../controllers/users.js");
+const bookingController = require("../controllers/bookings.js");
 
 // ==========================================
 // 1. LOCAL AUTHENTICATION ROUTES
@@ -55,8 +56,9 @@ router.get("/auth/google/callback",
 // 3. PROFILE, TRIPS, & WISHLIST ROUTES
 // ==========================================
 router.get("/profile", isLoggedIn, userController.renderProfile);
-router.get("/trips", isLoggedIn, userController.renderTrips);
 router.get("/wishlists", isLoggedIn, userController.renderWishlists);
 router.post("/listings/:id/wishlist", isLoggedIn, wrapAsync(userController.toggleWishlist));
+
+router.get("/trips", isLoggedIn, wrapAsync(bookingController.renderTrips));
 
 module.exports = router;
