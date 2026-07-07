@@ -4,6 +4,8 @@
 
 > A modern, full-stack accommodation booking platform inspired by Airbnb. Built with Node.js, Express, and MongoDB, featuring AI-powered trip insights, interactive mapping, and a seamless reservation engine.
 
+**[🌍 View Live Application Here](https://aurastays-nwll.onrender.com)**
+
 ---
 
 ## ✨ Key Features
