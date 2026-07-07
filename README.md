@@ -74,7 +74,7 @@ Want to test AuraStays on your local machine? Follow these steps:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/AuraStays.git
+git clone https://github.com/Prathamlm30/AuraStays.git
 cd AuraStays
 ```
 
@@ -126,7 +126,7 @@ Engineering Student at National Institute of Technology (NIT), Kurukshetra (IIOT
 
 I built AuraStays to solidify my understanding of full-stack MVC architecture, RESTful API design, and complex database relationships. By integrating third-party APIs (Mapbox, Cloudinary) and custom AI features, this project serves as a comprehensive showcase of modern web development practices.
 
-- [Connect with me on LinkedIn](#)
-- [Check out my GitHub Portfolio](#)
+- [Connect with me on LinkedIn](https://www.linkedin.com/in/pratham-sharma-0b3140280)
+- [Check out my GitHub Portfolio](https://github.com/Prathamlm30)
 
 *If you like this project, feel free to leave a ⭐ on the repository!*
