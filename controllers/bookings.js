@@ -30,9 +30,14 @@ module.exports.createBooking = async (req, res) => {
         const d2 = new Date(checkOut);
         const diffDays = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
         
-        // Ensure it grabs the dynamic price from the hidden input, and fallback to listing price if missing
-        let bookedPrice = req.body.booking.priceAtBooking || listing.price;
-        let totalPrice = bookedPrice * days;
+        // Safely extract the dynamic price and convert it to a Number
+        let bookedPrice = listing.price; // Default to the normal price
+        if (req.body.booking && req.body.booking.priceAtBooking) {
+            bookedPrice = Number(req.body.booking.priceAtBooking);
+        }
+        
+        // FIX: Multiply by the correct 'diffDays' variable!
+        let totalPrice = bookedPrice * diffDays;
         
         const booking = new Booking({
             listing: listingId,
