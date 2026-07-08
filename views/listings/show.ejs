@@ -162,12 +162,12 @@
         <div class="card p-4 shadow" style="border-radius: 1.5rem; border: 1px solid #e3e3e3; position: sticky; top: 120px;">
             
             <div class="mb-4">
-                <% if (locals.surgeStatus === 'high') { %>
+                <% if (typeof surgeStatus !== 'undefined' && surgeStatus === 'high') { %>
                     <div class="badge-surge surge-high mb-2 shadow-sm">
                         <i class="fa-solid fa-fire pulse-icon"></i> High Demand
                     </div>
                     <p class="text-muted small mb-2">This property is heavily booked. Prices are up slightly.</p>
-                <% } else if (locals.surgeStatus === 'low') { %>
+                <% } else if (typeof surgeStatus !== 'undefined' && surgeStatus === 'low') { %>
                     <div class="badge-surge surge-low mb-2 shadow-sm">
                         <i class="fa-solid fa-tag"></i> Price Drop
                     </div>
@@ -175,13 +175,13 @@
                 <% } %>
 
                 <div class="d-flex align-items-baseline gap-2">
-                    <% if (locals.surgeStatus === 'low') { %>
+                    <% if (typeof surgeStatus !== 'undefined' && surgeStatus === 'low') { %>
                         <span class="text-muted text-decoration-line-through fs-5">
                             &#8377; <%= listing.price.toLocaleString("en-IN") %>
                         </span>
                     <% } %>
                     
-                    <% let displayPrice = locals.dynamicPrice ? locals.dynamicPrice : listing.price; %>
+                    <% let displayPrice = (typeof dynamicPrice !== 'undefined') ? dynamicPrice : listing.price; %>
                     <span class="fs-2 fw-bold text-dark">
                         &#8377; <%= displayPrice.toLocaleString("en-IN") %>
                     </span>
@@ -208,7 +208,7 @@
 
             <form action="/listings/<%= listing._id %>/bookings" method="POST" id="bookingForm">
                 
-                <input type="hidden" name="booking[priceAtBooking]" value="<%= locals.dynamicPrice ? locals.dynamicPrice : listing.price %>">
+                <input type="hidden" name="booking[priceAtBooking]" value="<%= (typeof dynamicPrice !== 'undefined') ? dynamicPrice : listing.price %>">
 
                 <div class="row g-0 border rounded-3 mb-3 mt-3 text-start bg-white" style="font-size: 0.85rem; border-color: #dddddd !important; cursor: pointer;" id="datePickerContainer">
                     <div class="col-6 border-end p-2 px-3 position-relative" style="border-color: #dddddd !important;">
