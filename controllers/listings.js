@@ -3,37 +3,82 @@ const Booking = require("../Models/Booking.js");
 
 
 module.exports.index = async (req, res) => {
-    // 1. Extract the search query (q) and category from the URL
-    const { q, category } = req.query;
-    
-    // 2. Start with an empty query object (this fetches ALL listings by default)
-    let dbQuery = {};
+    try {
+        // 1. Extract the search query (q) and category from the URL
+        const { q, category } = req.query;
+        
+        // 2. Start with an empty query object
+        let dbQuery = {};
 
-    // 3. If the user typed something in the search bar
-    if (q) {
-        dbQuery = {
-            $or: [
-                { location: { $regex: q, $options: 'i' } }, // 'i' means case-insensitive
-                { country: { $regex: q, $options: 'i' } },
-                { title: { $regex: q, $options: 'i' } }
-            ]
-        };
+        // 3. If the user typed something in the search bar
+        if (q) {
+            dbQuery = {
+                $or: [
+                    { location: { $regex: q, $options: 'i' } },
+                    { country: { $regex: q, $options: 'i' } },
+                    { title: { $regex: q, $options: 'i' } }
+                ]
+            };
+        }
+
+        // 4. If the user clicked a category icon
+        if (category) {
+            dbQuery.category = category;
+        }
+
+        // 5. Fetch raw listings from database
+        const listings = await Listing.find(dbQuery);
+
+        // --- ALGORITHMIC PRICING FOR HOMEPAGE CARDS ---
+        const today = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        // Map over listings to calculate occupancy and attach pricing variables
+        const allListings = await Promise.all(listings.map(async (listing) => {
+            const upcomingBookings = await Booking.find({
+                listing: listing._id,
+                checkOut: { $gte: today },
+                checkIn: { $lte: thirtyDaysFromNow }
+            });
+
+            let bookedDays = 0;
+            for (let booking of upcomingBookings) {
+                const start = booking.checkIn < today ? today : booking.checkIn;
+                const end = booking.checkOut > thirtyDaysFromNow ? thirtyDaysFromNow : booking.checkOut;
+                const timeDifference = end.getTime() - start.getTime();
+                bookedDays += Math.ceil(timeDifference / (1000 * 3600 * 24));
+            }
+
+            if (bookedDays > 30) bookedDays = 30;
+            const occupancyRate = bookedDays / 30;
+
+            let dynamicPrice = listing.price;
+            let surgeStatus = "normal";
+
+            if (occupancyRate >= 0.7) {
+                dynamicPrice = Math.round(listing.price * 1.15);
+                surgeStatus = "high";
+            } else if (occupancyRate <= 0.2) {
+                dynamicPrice = Math.round(listing.price * 0.90);
+                surgeStatus = "low";
+            }
+
+            // Return a combined object for EJS to render
+            return {
+                ...listing.toObject(),
+                dynamicPrice,
+                surgeStatus
+            };
+        }));
+
+        // 6. Render the page with the dynamically priced listings
+        res.render("listings/index.ejs", { allListings, searchQuery: q });
+        
+    } catch (err) {
+        console.error("Homepage Pricing Error:", err);
+        res.redirect("/listings");
     }
-
-    // 4. If the user clicked a category icon
-    if (category) {
-        dbQuery.category = category;
-    }
-
-    // 5. Fetch listings based on the built query
-    const allListings = await Listing.find(dbQuery);
-
-    // 6. Render the page (Optionally, handle what happens if 0 listings are found)
-    res.render("listings/index.ejs", { allListings, searchQuery: q });
-};
-
-module.exports.renderNewForm = (req,res) => {
-    res.render("listings/new.ejs");
 };
 
 module.exports.showListing = async (req, res) => {

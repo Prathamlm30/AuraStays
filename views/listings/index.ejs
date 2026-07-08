@@ -156,12 +156,46 @@
                 <a href="/listings/<%= listing._id %>" class="listing-link text-decoration-none text-dark d-block">
                     <img src="<%= listing.image.url %>" class="card-img-top rounded-4 shadow-sm" alt="listing_image" style="height: 20rem; object-fit: cover;">
                     
-                    <div class="card-body px-1 py-3">
-                        <p class="card-text mb-0">
-                            <b class="fs-5"><%= listing.title %></b> <br>
-                            <span class="fw-semibold mt-1 d-inline-block">&#8377; <%= listing.price.toLocaleString("en-IN") %></span> / night
-                            <i class="tax-info text-muted ms-2" style="font-size: 0.9rem;">&nbsp; +18% GST</i>
+                    <div class="card-body pt-3 pb-2 px-1">
+                        <!-- 1. Property Title -->
+                        <p class="card-text mb-2">
+                            <span class="fw-bold text-dark fs-5"><%= listing.title %></span>
                         </p>
+
+                        <!-- 2. DYNAMIC BADGES & SUBTITLE -->
+                        <% if (listing.surgeStatus === 'high') { %>
+                            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-2 rounded-pill shadow-sm" style="background-color: #ffe8e9; color: #fe424d; font-size: 0.85rem; font-weight: 600; border: 1px solid #ffc2c5;">
+                                <i class="fa-solid fa-fire pulse-icon"></i> High Demand
+                            </div>
+                            <p class="text-muted mb-2" style="font-size: 0.85rem;">This property is heavily booked. Prices are up slightly.</p>
+                            
+                        <% } else if (listing.surgeStatus === 'low') { %>
+                            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 mb-2 rounded-pill shadow-sm" style="background-color: #e6f8ed; color: #198754; font-size: 0.85rem; font-weight: 600; border: 1px solid #bdf0d4;">
+                                <i class="fa-solid fa-tag"></i> Price Drop
+                            </div>
+                            <p class="text-muted mb-2" style="font-size: 0.85rem;">Enjoy a special discount for your stay!</p>
+                            
+                        <% } else { %>
+                            <!-- Spacer for uniform card heights -->
+                            <div style="height: 60px;"></div> 
+                        <% } %>
+
+                        <!-- 3. PRICE DISPLAY WITH TAX INFO -->
+                        <div class="d-flex align-items-baseline gap-2 mt-1">
+                            <% if (listing.surgeStatus === 'low') { %>
+                                <span class="text-muted text-decoration-line-through" style="font-size: 1.05rem;">
+                                    &#8377;<%= listing.price.toLocaleString("en-IN") %>
+                                </span>
+                            <% } %>
+                            
+                            <% let displayPrice = listing.dynamicPrice ? listing.dynamicPrice : listing.price; %>
+                            <span class="fw-bold text-dark" style="font-size: 1.3rem;">
+                                &#8377;<%= displayPrice.toLocaleString("en-IN") %>
+                            </span>
+                            <span class="text-muted" style="font-size: 0.9rem;">/ night</span>
+                            
+                            <i class="tax-info text-muted ms-1" style="font-size: 0.85rem;">&nbsp;+18% GST</i>
+                        </div>
                     </div>
                 </a>
                 
@@ -169,8 +203,6 @@
         </div>
     <% } %>
 </div>
-
-
 
 <script>
     let taxSwitch = document.getElementById("switchCheckDefault");
