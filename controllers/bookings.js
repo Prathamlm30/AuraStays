@@ -18,10 +18,19 @@ module.exports.getBookedDates = async (req, res) => {
 };
 
 // 2. Form Submission: Create a new trip
+// 2. Form Submission: Create a new trip
 module.exports.createBooking = async (req, res) => {
     try {
         const { checkIn, checkOut } = req.body;
         const listingId = req.params.id;
+
+        // --- NEW SAFETY CHECK ---
+        // If the user clicks reserve without selecting dates, stop and show an error
+        if (!checkIn || !checkOut) {
+            req.flash("error", "Select the dates first before booking and proceeding further.");
+            return res.redirect(`/listings/${listingId}`);
+        }
+        // ------------------------
         
         const listing = await Listing.findById(listingId);
         
@@ -36,7 +45,6 @@ module.exports.createBooking = async (req, res) => {
             bookedPrice = Number(req.body.booking.priceAtBooking);
         }
         
-        // FIX: Multiply by the correct 'diffDays' variable!
         let totalPrice = bookedPrice * diffDays;
         
         const booking = new Booking({

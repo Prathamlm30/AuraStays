@@ -207,6 +207,7 @@
 </div>
 
 <script>
+    // --- EXISTING TAX TOGGLE LOGIC ---
     let taxSwitch = document.getElementById("switchCheckDefault");
     taxSwitch.addEventListener("click", () => {
         let taxInfo = document.getElementsByClassName("tax-info");
@@ -217,5 +218,29 @@
                 info.style.display = "none";
             }
         }
+    });
+
+    // --- NEW: SMART SCROLL RESTORATION ---
+    // 1. When the page loads, check if we have a saved scroll position
+    document.addEventListener("DOMContentLoaded", () => {
+        const savedScrollPosition = sessionStorage.getItem("homeScroll");
+        
+        if (savedScrollPosition) {
+            // A tiny timeout ensures all images and grid cards render before jumping
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPosition));
+                
+                // Clear the memory so it doesn't accidentally trigger on a fresh visit tomorrow
+                sessionStorage.removeItem("homeScroll"); 
+            }, 10);
+        }
+    });
+
+    // 2. Right before the user leaves the page, save their exact Y-axis position
+    const listingLinks = document.querySelectorAll(".listing-link");
+    listingLinks.forEach(link => {
+        link.addEventListener("click", () => {
+            sessionStorage.setItem("homeScroll", window.scrollY);
+        });
     });
 </script>

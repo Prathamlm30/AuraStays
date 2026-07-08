@@ -3,10 +3,25 @@ const Review = require("./Models/review.js");
 const ExpressError = require("./utils/ExpressError.js");
 const {listingSchema, reviewSchema} = require("./schema.js");
 
-module.exports.isLoggedIn = (req,res,next) => {
-    if(!req.isAuthenticated()) {
+module.exports.isLoggedIn = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        // Save the URL they were trying to access
         req.session.redirectUrl = req.originalUrl;
-        req.flash("error","you must be logged in to create listing!");
+        
+        // --- DYNAMIC ERROR MESSAGES ---
+        if (req.originalUrl.includes("/bookings")) {
+            // If they were trying to reserve a property
+            req.flash("error", "You need to be logged in in order to create/book a reservation.");
+            
+        } else if (req.originalUrl.includes("/reviews")) {
+            // If they were trying to leave a review
+            req.flash("error", "You need to be logged in to leave a review.");
+            
+        } else {
+            // Default fallback for creating/editing a listing
+            req.flash("error", "You must be logged in to create a listing!");
+        }
+        
         return res.redirect("/login");
     }
     next();
