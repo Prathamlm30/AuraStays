@@ -10,7 +10,7 @@
                 <form method="POST" action="/listings/<%= listing._id %>/wishlist" class="m-0">
                     <% 
                        // Bulletproof MongoDB ObjectId check
-                       let isSaved = currUser.wishlists && currUser.wishlists.some(id => id.equals(listing._id)); 
+                       let isSaved = currUser.wishlists && currUser.wishlists.some(id => id.equals(listing._id));
                     %>
                     <button type="submit" class="btn btn-light border-0 rounded-circle shadow-sm heart-btn" style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
                         <% if(isSaved) { %>
@@ -158,14 +158,36 @@
 
     </div>
 
-    <!-- RIGHT SIDEBAR: PRICING & RESERVATION -->
     <div class="col-4">
         <div class="card p-4 shadow" style="border-radius: 1.5rem; border: 1px solid #e3e3e3; position: sticky; top: 120px;">
             
-            <h3 class="fw-bold mb-4">
-                &#8377; <%= listing.price.toLocaleString("en-IN") %> 
-                <span class="fs-5 text-muted fw-normal">night</span>
-            </h3>
+            <div class="mb-4">
+                <% if (locals.surgeStatus === 'high') { %>
+                    <div class="badge-surge surge-high mb-2 shadow-sm">
+                        <i class="fa-solid fa-fire pulse-icon"></i> High Demand
+                    </div>
+                    <p class="text-muted small mb-2">This property is heavily booked. Prices are up slightly.</p>
+                <% } else if (locals.surgeStatus === 'low') { %>
+                    <div class="badge-surge surge-low mb-2 shadow-sm">
+                        <i class="fa-solid fa-tag"></i> Price Drop
+                    </div>
+                    <p class="text-muted small mb-2">Enjoy a special discount for your stay!</p>
+                <% } %>
+
+                <div class="d-flex align-items-baseline gap-2">
+                    <% if (locals.surgeStatus === 'low') { %>
+                        <span class="text-muted text-decoration-line-through fs-5">
+                            &#8377; <%= listing.price.toLocaleString("en-IN") %>
+                        </span>
+                    <% } %>
+                    
+                    <% let displayPrice = locals.dynamicPrice ? locals.dynamicPrice : listing.price; %>
+                    <span class="fs-2 fw-bold text-dark">
+                        &#8377; <%= displayPrice.toLocaleString("en-IN") %>
+                    </span>
+                    <span class="text-muted">/ night</span>
+                </div>
+            </div>
 
             <div class="ai-planner-container p-3 rounded mb-4 border">
                 <div class="d-flex justify-content-between align-items-center">
@@ -184,9 +206,10 @@
                 </div>
             </div>
 
-            <!-- NEW DYNAMIC CALENDAR BOOKING FORM -->
             <form action="/listings/<%= listing._id %>/bookings" method="POST" id="bookingForm">
                 
+                <input type="hidden" name="booking[priceAtBooking]" value="<%= locals.dynamicPrice ? locals.dynamicPrice : listing.price %>">
+
                 <div class="row g-0 border rounded-3 mb-3 mt-3 text-start bg-white" style="font-size: 0.85rem; border-color: #dddddd !important; cursor: pointer;" id="datePickerContainer">
                     <div class="col-6 border-end p-2 px-3 position-relative" style="border-color: #dddddd !important;">
                         <label class="fw-bold text-muted text-uppercase mb-0 d-block" style="font-size: 0.65rem;">Check-In</label>
@@ -201,24 +224,19 @@
                 <button type="submit" class="btn w-100 py-3 fw-bold text-white search-btn shadow-sm rounded-3 mb-2" style="background-color: #fe424d; font-size: 1.05rem;">Reserve</button>
                 <p class="text-center text-muted m-0" style="font-size: 0.85rem;">You won't be charged yet</p>
             </form>
-            <!-- END NEW FORM -->
-
-        </div>
+            </div>
     </div>
 
 </div>
 
-<!-- EXTERNAL SCRIPTS -->
 <script>
     const listingData = <%- JSON.stringify(listing) %>;
 </script>
 <script src="/js/map.js?v=2"></script>
 <script src="/js/ai.js"></script>
 
-<!-- FLATPICKR CDN LINKS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
-<!-- OUR CUSTOM EXTERNAL FILES -->
 <link rel="stylesheet" href="/css/calendar.css">
 <script src="/js/calendar.js"></script>

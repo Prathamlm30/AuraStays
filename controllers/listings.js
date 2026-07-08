@@ -1,5 +1,5 @@
 const Listing = require("../Models/Listing.js");
-
+const Booking = require("../Models/Booking.js");
 
 
 module.exports.index = async (req, res) => {
@@ -36,15 +36,77 @@ module.exports.renderNewForm = (req,res) => {
     res.render("listings/new.ejs");
 };
 
-module.exports.showListing = async (req,res) => {
-    let {id} = req.params;
-    const listing = await Listing.findById(id).populate({path: "reviews", populate: {path: "author",},}).populate("owner");
-    if(!listing) {
-        req.flash("error","Listing you requested for does not exist!");
-        return res.redirect("/listings");
+module.exports.showListing = async (req, res) => {
+    try {
+        let { id } = req.params;
+        
+        // Fetch the listing with its reviews and owner
+        const listing = await Listing.findById(id)
+            .populate({
+                path: "reviews",
+                populate: { path: "author" }
+            })
+            .populate("owner");
+
+        if (!listing) {
+            req.flash("error", "The listing you requested does not exist!");
+            return res.redirect("/listings");
+        }
+
+        // --- ALGORITHMIC PRICING ENGINE ---
+        
+        // 1. Define our time window (Next 30 days)
+        const today = new Date();
+        const thirtyDaysFromNow = new Date();
+        thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+        // 2. Query MongoDB for upcoming bookings within this window
+        const upcomingBookings = await Booking.find({
+            listing: id,
+            checkOut: { $gte: today },
+            checkIn: { $lte: thirtyDaysFromNow }
+        });
+
+        // 3. Calculate total booked days (handling overlapping intervals)
+        let bookedDays = 0;
+        for (let booking of upcomingBookings) {
+            // Clamp the dates so we only count days within our 30-day window
+            const start = booking.checkIn < today ? today : booking.checkIn;
+            const end = booking.checkOut > thirtyDaysFromNow ? thirtyDaysFromNow : booking.checkOut;
+            
+            const timeDifference = end.getTime() - start.getTime();
+            const days = Math.ceil(timeDifference / (1000 * 3600 * 24));
+            bookedDays += days;
+        }
+
+        // Prevent edge-case overcounting
+        if (bookedDays > 30) bookedDays = 30;
+
+        // 4. Calculate Occupancy Rate
+        const occupancyRate = bookedDays / 30;
+
+        // 5. Apply Surge Pricing Logic
+        let dynamicPrice = listing.price;
+        let surgeStatus = "normal"; 
+
+        if (occupancyRate >= 0.7) {
+            // High Demand: 70%+ booked -> 15% price increase
+            dynamicPrice = Math.round(listing.price * 1.15);
+            surgeStatus = "high";
+        } else if (occupancyRate <= 0.2) {
+            // Low Demand: 20% or less booked -> 10% price decrease
+            dynamicPrice = Math.round(listing.price * 0.90);
+            surgeStatus = "low";
+        }
+
+        // Pass the dynamically calculated data to the frontend
+        res.render("listings/show.ejs", { listing, dynamicPrice, surgeStatus });
+        
+    } catch (err) {
+        console.error("Pricing Engine Error:", err);
+        req.flash("error", "Could not load the listing.");
+        res.redirect("/listings");
     }
-    console.log(listing);
-    res.render("listings/show.ejs", {listing});
 };
 
 module.exports.createListing = async (req,res) => {
