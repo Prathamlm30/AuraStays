@@ -113,13 +113,30 @@ module.exports.logout = (req,res,next) => {
 // 1. Render Profile Page
 module.exports.renderProfile = async (req, res) => {
     try {
-        // Ask the database: "How many bookings match this user's ID?"
+        // --- 1. GUEST STATS ---
+        // How many trips has this user booked?
         const tripCount = await Booking.countDocuments({ user: req.user._id });
         
-        // Pass that count to the EJS template
-        res.render("users/profile.ejs", { tripCount });
+        // --- 2. HOST STATS (Total Earnings) ---
+        // First, find all properties owned by this user
+        const userListings = await Listing.find({ owner: req.user._id });
+        const listingIds = userListings.map(listing => listing._id);
+        
+        // Next, find every single booking made at any of those properties
+        const hostBookings = await Booking.find({ listing: { $in: listingIds } });
+        
+        // Finally, loop through those bookings and sum up the total revenue
+        let totalEarnings = 0;
+        for (let booking of hostBookings) {
+            // Fallback to 0 if totalPrice is ever missing to prevent NaN errors
+            totalEarnings += booking.totalPrice || 0; 
+        }
+
+        // Pass both stats to the EJS template
+        res.render("users/profile.ejs", { tripCount, totalEarnings });
+        
     } catch (err) {
-        console.error(err);
+        console.error("Profile Error:", err);
         req.flash("error", "Could not load profile data.");
         res.redirect("/listings");
     }
@@ -157,6 +174,48 @@ module.exports.toggleWishlist = async (req, res) => {
     
     // Smart redirect: send them exactly back to the page they clicked the button on
     res.redirect(req.get("referer") || "/listings");
+};
+
+// Render the Payout Settings Page
+module.exports.renderPayoutSettings = (req, res) => {
+    res.render("users/payout.ejs");
+};
+
+// Intercept Payout Update & Trigger 2FA
+module.exports.initiatePayoutUpdate = async (req, res) => {
+    const { accountName, accountNumber, ifscCode } = req.body;
+
+    // 1. Generate OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // 2. Save the intent AND the new data in the session
+    req.session.pendingAction = {
+        actionType: "UPDATE_PAYOUT",
+        newPayoutData: { accountName, accountNumber, ifscCode },
+        otp: otpCode,
+        expiresAt: Date.now() + 10 * 60 * 1000
+    };
+
+    // 3. Send the custom security email
+    const subject = "Security Alert: Verify Payout Changes";
+    const htmlContent = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+            <h2>Payout Details Update</h2>
+            <p>We received a request to update your bank payout details. Use this code to confirm:</p>
+            <h1 style="color: #fe424d; letter-spacing: 5px;">${otpCode}</h1>
+            <p>If you did not request this, please secure your account immediately.</p>
+        </div>
+    `;
+
+    try {
+        await sendEmail(req.user.email, subject, htmlContent);
+        req.flash("success", "Check your email for a verification code to confirm your new payout settings.");
+        res.redirect("/verify-action");
+    } catch (err) {
+        console.error("Email Error:", err);
+        req.flash("error", "Could not send verification email. Try again later.");
+        res.redirect("/payout");
+    }
 };
 
 // ==========================================
@@ -202,6 +261,15 @@ module.exports.verifyActionExecution = async (req, res) => {
             req.flash("success", "Listing successfully and securely deleted.");
             return res.redirect("/listings");
         } 
+        else if (pending.actionType === "UPDATE_PAYOUT") {
+            const user = await User.findById(req.user._id);
+            user.payoutDetails = pending.newPayoutData;
+            await user.save();
+
+            req.session.pendingAction = null;
+            req.flash("success", "Payout settings securely updated!");
+            return res.redirect("/profile");
+        }
         else {
             req.session.pendingAction = null;
             req.flash("error", "Unknown action requested.");

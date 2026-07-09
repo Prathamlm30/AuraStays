@@ -64,6 +64,13 @@ router.get("/trips", isLoggedIn, wrapAsync(bookingController.renderTrips));
 router.delete("/bookings/:id", isLoggedIn, wrapAsync(bookingController.destroyBooking));
 
 // ==========================================
+// PAYOUT ROUTES
+// ==========================================
+router.route("/payout")
+    .get(isLoggedIn, userController.renderPayoutSettings)
+    .post(isLoggedIn, wrapAsync(userController.initiatePayoutUpdate));
+
+// ==========================================
 // 4. 2FA SECURITY ROUTES
 // ==========================================
 

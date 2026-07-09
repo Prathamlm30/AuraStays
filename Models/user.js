@@ -10,6 +10,11 @@ const userSchema = new Schema({
     googleId: {
         type: String
     },
+    payoutDetails: {
+        accountName: String,
+        accountNumber: String,
+        ifscCode: String
+    },
     wishlists: [
         {
             type: Schema.Types.ObjectId,

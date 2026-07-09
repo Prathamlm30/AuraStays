@@ -1,0 +1,45 @@
+<% layout("/layouts/boilerPlate") %>
+
+<div class="row mt-5 mb-5">
+    <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+        <h3 class="fw-bold mb-4">Payout Settings</h3>
+        <p class="text-muted mb-4">Update where your earnings are sent. For your security, changes require two-factor email authentication.</p>
+
+        <div class="card shadow-sm p-4" style="border-radius: 1rem; border: 1px solid #e3e3e3;">
+            <form method="POST" action="/payout" class="needs-validation" novalidate>
+                
+                <div class="mb-3">
+                    <label for="accountName" class="form-label fw-semibold">Account Holder Name</label>
+                    <input type="text" class="form-control" id="accountName" name="accountName" value="<%= currUser.payoutDetails?.accountName || '' %>" required>
+                    <div class="invalid-feedback">Please enter the account name.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="ifscCode" class="form-label fw-semibold">IFSC Code</label>
+                    <input 
+                        type="text" 
+                        class="form-control text-uppercase" 
+                        id="ifscCode" 
+                        name="ifscCode" 
+                        value="<%= currUser.payoutDetails?.ifscCode || '' %>" 
+                        pattern="^[A-Za-z]{4}0[A-Za-z0-9]{6}$" 
+                        maxlength="11"
+                        required
+                    >
+                    <div class="invalid-feedback">Please enter a valid 11-character IFSC code.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="accountNumber" class="form-label fw-semibold">Account Number</label>
+                    <input type="password" class="form-control" id="accountNumber" name="accountNumber" placeholder="••••••••" required>
+                    <div class="invalid-feedback">Please enter your account number.</div>
+                    <div class="form-text text-muted" style="font-size: 0.8rem;"><i class="fa-solid fa-lock"></i> Your data is securely encrypted.</div>
+                </div>
+
+                <button type="submit" class="btn text-white w-100 fw-bold py-2" style="background-color: #fe424d; border-radius: 0.5rem;">
+                    Update Payout Details
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
