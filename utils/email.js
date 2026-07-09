@@ -1,4 +1,4 @@
-const sendOTP = async (email, otp) => {
+const sendEmail = async (email, subject, htmlContent) => {
     try {
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
@@ -10,32 +10,23 @@ const sendOTP = async (email, otp) => {
             body: JSON.stringify({
                 sender: { 
                     name: "AuraStays Security", 
-                    email: process.env.SENDER_EMAIL // Pulled securely from your environment variables
+                    email: process.env.SENDER_EMAIL 
                 },
-                to: [{ email: email }], // The email the user typed into your sign-up form
-                subject: "Verify Your AuraStays Account",
-                htmlContent: `
-                <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
-                    <h2>Welcome to AuraStays!</h2>
-                    <p>Your 6-digit verification code is:</p>
-                    <h1 style="color: #fe424d; letter-spacing: 5px;">${otp}</h1>
-                    <p>This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
-                </div>
-                `
+                to: [{ email: email }],
+                subject: subject, // Now dynamic!
+                htmlContent: htmlContent // Now dynamic!
             })
         });
 
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Brevo API Error:", errorData);
-            throw new Error("Could not send verification email.");
+            throw new Error("Could not send email.");
         }
-
-        console.log(`OTP sent successfully to ${email}`);
     } catch (error) {
         console.error("Error sending email:", error);
-        throw new Error("Could not send verification email.");
+        throw new Error("Could not send email.");
     }
 };
 
-module.exports = sendOTP;
+module.exports = sendEmail;

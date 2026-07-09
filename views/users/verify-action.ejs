@@ -1,0 +1,46 @@
+<% layout("/layouts/boilerPlate") %>
+
+<div class="row mt-5 mb-5">
+    <div class="col-md-6 offset-md-3 col-lg-4 offset-lg-4">
+        <div class="card shadow p-4" style="border-radius: 1.5rem; border: 1px solid #e3e3e3;">
+            <div class="card-body text-center">
+                
+                <div class="mb-4">
+                    <i class="fa-solid fa-shield-halved mb-3" style="font-size: 3rem; color: #fe424d;"></i>
+                    <h3 class="fw-bold">Security Verification</h3>
+                    <p class="text-muted" style="font-size: 0.95rem;">
+                        To protect your account, we've sent a 6-digit verification code to <strong><%= email %></strong>.
+                    </p>
+                </div>
+
+                <form method="POST" action="/verify-action" class="needs-validation" novalidate>
+                    <div class="mb-4 text-start">
+                        <label for="otpCode" class="form-label fw-semibold text-muted text-uppercase" style="font-size: 0.75rem;">Enter 6-Digit Code</label>
+                        <input 
+                            type="text" 
+                            class="form-control form-control-lg text-center fw-bold" 
+                            id="otpCode" 
+                            name="otpCode" 
+                            placeholder="• • • • • •" 
+                            maxlength="6" 
+                            pattern="\d{6}"
+                            style="letter-spacing: 0.5rem; border-radius: 1rem;"
+                            required
+                        >
+                        <div class="invalid-feedback text-start">
+                            Please enter the 6-digit code sent to your email.
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn w-100 py-3 fw-bold text-white shadow-sm" style="background-color: #fe424d; border-radius: 1rem; font-size: 1.05rem;">
+                        Verify & Confirm
+                    </button>
+                </form>
+
+                <div class="mt-4 text-muted" style="font-size: 0.85rem;">
+                    Didn't receive the email? Check your spam folder.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

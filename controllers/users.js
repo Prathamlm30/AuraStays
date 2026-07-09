@@ -1,6 +1,8 @@
 const User = require("../Models/user.js");
-const sendOTP = require("../utils/email");
+// 1. UPDATED IMPORT: Change sendOTP to sendEmail
+const sendEmail = require("../utils/email"); 
 const Booking = require("../Models/Booking.js");
+const Listing = require("../Models/Listing.js"); // Required for 2FA deletion
 
 module.exports.renderSignupForm = (req,res) => {
     res.render("users/signup.ejs");
@@ -17,8 +19,20 @@ module.exports.signup = async (req, res, next) => {
         // Save the user's data AND the OTP temporarily in the session
         req.session.pendingUser = { username, email, password, otp };
         
-        // Send the email
-        await sendOTP(email, otp);
+        // --- 2. UPDATED EMAIL LOGIC: Dynamic Subject and HTML ---
+        const subject = "Welcome to AuraStays!";
+        const htmlContent = `
+            <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+                <h2>Welcome to AuraStays!</h2>
+                <p>Your 6-digit verification code is:</p>
+                <h1 style="color: #fe424d; letter-spacing: 5px;">${otp}</h1>
+                <p>This code will expire in 10 minutes. If you did not request this, please ignore this email.</p>
+            </div>
+        `;
+
+        // Send the email using the generic function
+        await sendEmail(email, subject, htmlContent);
+        // --------------------------------------------------------
         
         req.flash("success", "Verification code sent! Please check your email.");
         res.redirect("/verify-otp");
@@ -143,4 +157,61 @@ module.exports.toggleWishlist = async (req, res) => {
     
     // Smart redirect: send them exactly back to the page they clicked the button on
     res.redirect(req.get("referer") || "/listings");
+};
+
+// ==========================================
+// 2FA SECURITY CONTROLLERS
+// ==========================================
+
+// 1. Render the 2FA Verification Page
+module.exports.renderVerifyAction = (req, res) => {
+    // Prevent users from accessing this page directly if they haven't initiated an action
+    if (!req.session.pendingAction) {
+        req.flash("error", "No pending action found.");
+        return res.redirect("/listings");
+    }
+    
+    // Pass the email to the frontend so we can show them where we sent it
+    res.render("users/verify-action.ejs", { email: req.user.email });
+};
+
+// 2. Handle the 2FA Verification and Execute Action
+module.exports.verifyActionExecution = async (req, res) => {
+    try {
+        const pending = req.session.pendingAction;
+        const { otpCode } = req.body;
+
+        // Check if the session expired or is missing
+        if (!pending || Date.now() > pending.expiresAt) {
+            req.session.pendingAction = null; 
+            req.flash("error", "The verification code has expired. Please try again.");
+            return res.redirect("/listings");
+        }
+
+        // Validate the OTP
+        if (otpCode !== pending.otp) {
+            req.flash("error", "Invalid verification code. Please check your email and try again.");
+            return res.redirect("/verify-action");
+        }
+
+        // OTP is Valid! Execute the requested action dynamically
+        if (pending.actionType === "DELETE_LISTING") {
+            await Listing.findByIdAndDelete(pending.listingId);
+            req.session.pendingAction = null; 
+            
+            req.flash("success", "Listing successfully and securely deleted.");
+            return res.redirect("/listings");
+        } 
+        else {
+            req.session.pendingAction = null;
+            req.flash("error", "Unknown action requested.");
+            return res.redirect("/listings");
+        }
+
+    } catch (err) {
+        console.error("2FA Execution Error:", err);
+        req.session.pendingAction = null;
+        req.flash("error", "Something went wrong while verifying your action.");
+        res.redirect("/listings");
+    }
 };

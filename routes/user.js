@@ -63,4 +63,14 @@ router.get("/trips", isLoggedIn, wrapAsync(bookingController.renderTrips));
 // NEW: Delete a reservation
 router.delete("/bookings/:id", isLoggedIn, wrapAsync(bookingController.destroyBooking));
 
+// ==========================================
+// 4. 2FA SECURITY ROUTES
+// ==========================================
+
+// Render the 2FA Verification Page
+router.get("/verify-action", isLoggedIn, userController.renderVerifyAction);
+
+// Handle the 2FA Verification and Execute Action
+router.post("/verify-action", isLoggedIn, wrapAsync(userController.verifyActionExecution));
+
 module.exports = router;

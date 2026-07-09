@@ -1,6 +1,8 @@
 const Listing = require("../Models/Listing.js");
 const Booking = require("../Models/Booking.js");
 
+const sendEmail = require("../utils/email.js"); 
+
 // 1. HOMEPAGE CONTROLLER (With Dynamic Pricing)
 module.exports.index = async (req, res) => {
     try {
@@ -226,12 +228,40 @@ module.exports.updateListing = async(req,res) => {
 };
 
 // 7. DESTROY LISTING
-module.exports.destroyListing = async (req,res) => {
-    let {id} = req.params;
-    let deletedListing = await Listing.findByIdAndDelete(id);
-    console.log(deletedListing);
-    req.flash("success","Listing Deleted!");
-    res.redirect("/listings");
+module.exports.destroyListing = async (req, res) => {
+    let { id } = req.params;
+    
+    // 1. Generate a 6-digit OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // 2. Save to session
+    req.session.pendingAction = {
+        actionType: "DELETE_LISTING",
+        listingId: id,
+        otp: otpCode,
+        expiresAt: Date.now() + 10 * 60 * 1000 
+    };
+
+    // 3. Send the custom security email
+    const emailSubject = "Security Alert: Verify Listing Deletion";
+    const emailBody = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; text-align: center;">
+            <h2>Delete Property Confirmation</h2>
+            <p>You have requested to delete a listing. Please use the following code to confirm:</p>
+            <h1 style="color: #fe424d; letter-spacing: 5px;">${otpCode}</h1>
+            <p>This code will expire in 10 minutes. If you did not request this, please change your account password immediately.</p>
+        </div>
+    `;
+
+    try {
+        await sendEmail(req.user.email, emailSubject, emailBody);
+        req.flash("success", "For your security, we've sent a 6-digit code to your email to confirm this deletion.");
+        res.redirect(`/verify-action`); 
+    } catch (err) {
+        console.error("Email error:", err);
+        req.flash("error", "Failed to send security email.");
+        res.redirect(`/listings/${id}`);
+    }
 }
 
 // =======================
