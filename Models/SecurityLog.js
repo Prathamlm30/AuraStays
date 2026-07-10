@@ -10,6 +10,8 @@ const securityLogSchema = new Schema({
     ipAddress: String,
     city: String,
     country: String,
+    latitude: Number,
+    longitude: Number,
     createdAt: { 
         type: Date, 
         default: Date.now 

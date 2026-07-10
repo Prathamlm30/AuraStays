@@ -26,6 +26,14 @@ const userSchema = new Schema({
             ref: "Listing"
         }
     ],
+    otp: {
+        type: String,
+        default: null
+    },
+    otpExpires: {
+        type: Date,
+        default: null
+    }
 });
 
 // 1. Virtual for counting a user's listings
