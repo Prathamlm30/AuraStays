@@ -100,7 +100,15 @@ module.exports.renderLoginForm = (req,res) => {
 module.exports.login = async (req, res) => {
     // --- 1. THREAT DETECTION: Geographic Logging ---
     // Grab the IP address from the incoming request
-    let ip = req.ip || req.connection.remoteAddress;
+    // --- 1. THREAT DETECTION: Geographic Logging ---
+    // Grab the IP from the proxy header first, fallback to standard request IP
+    let ip = req.headers['x-forwarded-for'] || req.ip || req.connection.remoteAddress;
+
+    // If the user went through multiple proxies, it returns a comma-separated list. 
+    // We only want the very first IP in the list (the original device).
+    if (ip && ip.includes(',')) {
+        ip = ip.split(',')[0].trim();
+    }
 
     // 🚨 LOCALHOST TESTING CHEAT: 
     // Uncomment the line below to simulate a login from London, UK.
