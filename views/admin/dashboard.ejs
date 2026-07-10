@@ -128,7 +128,7 @@
                         <% for (let log of recentLogs) { %>
                             <tr>
                                 <td class="ps-4 text-muted" style="font-size: 0.9rem;">
-                                    <%= new Date(log.createdAt).toLocaleString() %>
+                                    <%= new Date(log.createdAt).toLocaleString("en-US", { timeZone: "Asia/Kolkata" }) %>
                                 </td>
                                 <td class="fw-bold text-dark">
                                     <%= log.user ? log.user.username : 'Deleted User' %> 
