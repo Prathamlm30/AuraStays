@@ -10,6 +10,11 @@ const userSchema = new Schema({
     googleId: {
         type: String
     },
+    role: {
+        type: String,
+        enum: ['user', 'admin'], // Only these two strings are allowed
+        default: 'user'          // Every new signup gets this by default
+    },
     payoutDetails: {
         accountName: String,
         accountNumber: String,
@@ -22,6 +27,22 @@ const userSchema = new Schema({
         }
     ],
 });
+
+// 1. Virtual for counting a user's listings
+        userSchema.virtual('totalListings', {
+            ref: 'Listing',
+            localField: '_id',
+            foreignField: 'owner', // Assuming your Listing model uses 'owner' to track the user
+            count: true // This tells Mongoose to just return the number, not the whole document!
+        });
+
+        // 2. Virtual for counting a user's reviews
+        userSchema.virtual('totalReviews', {
+            ref: 'Review',
+            localField: '_id',
+            foreignField: 'author', // Assuming your Review model uses 'author'
+            count: true
+        })
 
 userSchema.plugin(passportLocalMongoose);
 

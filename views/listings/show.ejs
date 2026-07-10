@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+        <% if(currUser && (currUser._id.equals(listing.owner._id) || currUser.role === 'admin')) { %>
             <div class="d-flex gap-3 mb-4">
                 <a href="/listings/<%=listing._id%>/edit" class="btn btn-dark px-4 edit-btn">Edit Listing</a>
                 <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE" class="m-0">
@@ -110,7 +110,7 @@
                                             <p class="mb-1 host-reply-header">
                                                 <i class="fa-solid fa-reply ai-icon"></i> Host Reply:
                                             </p>
-                                            <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
+                                            <% if(currUser && (currUser._id.equals(review.author._id) || currUser.role === 'admin')) { %>
                                                 <form method="POST" action="/listings/<%= listing._id %>/reviews/<%= review._id %>/reply?_method=DELETE" class="m-0 p-0">
                                                     <button type="submit" class="btn btn-sm text-danger p-0 host-reply-delete-btn" title="Delete Reply">
                                                         <i class="fa-solid fa-trash"></i>
@@ -136,7 +136,7 @@
                                 <% } %>
                             </div>
                             
-                            <% if(currUser && currUser._id.equals(review.author._id)) { %>
+                            <% if(currUser && (currUser._id.equals(review.author._id) || currUser.role === 'admin')) { %>
                                 <div class="card-footer bg-transparent border-0 pt-0">
                                     <form method="POST" action="/listings/<%=listing._id %>/reviews/<%= review._id %>?_method=DELETE">
                                         <button class="btn btn-sm btn-dark">Delete My Review</button>

@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../Models/user.js");
 const wrapAsync = require("../utils/wrapAsync.js");
 const passport = require("passport");
-const { saveRedirectUrl, isLoggedIn} = require("../middleware.js");
+const { saveRedirectUrl, isLoggedIn, loginLimiter} = require("../middleware.js");
 const userController = require("../controllers/users.js");
 const bookingController = require("../controllers/bookings.js");
 
@@ -16,7 +16,7 @@ router.route("/signup")
 
 router.route("/login")
     .get(userController.renderLoginForm)
-    .post(saveRedirectUrl, passport.authenticate("local", {failureRedirect: "/login", failureFlash: true}), userController.login);
+    .post(saveRedirectUrl,loginLimiter, passport.authenticate("local", {failureRedirect: "/login", failureFlash: true}), userController.login);
 
 
 // Add these right below your router.route("/login") block:

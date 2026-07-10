@@ -1,0 +1,154 @@
+<% layout("/layouts/boilerPlate") %>
+
+<style>
+    body { background-color: #f8f9fa !important; } /* Light gray background for contrast */
+    .metric-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .metric-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important; }
+    .bg-icon { position: absolute; right: 20px; top: 25px; opacity: 0.15; font-size: 3.5rem; }
+</style>
+
+<div class="container mt-5 mb-5">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-shield-halved me-2" style="color: #fe424d;"></i> Command Center</h2>
+            <p class="text-muted mt-1">Platform overview and security monitoring</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 metric-card" style="border-radius: 1rem; border-left: 5px solid #0d6efd !important;">
+                <div class="card-body p-4 position-relative overflow-hidden">
+                    <h6 class="text-muted fw-bold text-uppercase mb-1">Total Users</h6>
+                    <h2 class="fw-bold mb-0 text-dark"><%= totalUsers %></h2>
+                    <i class="fa-solid fa-users bg-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 metric-card" style="border-radius: 1rem; border-left: 5px solid #198754 !important;">
+                <div class="card-body p-4 position-relative overflow-hidden">
+                    <h6 class="text-muted fw-bold text-uppercase mb-1">Active Listings</h6>
+                    <h2 class="fw-bold mb-0 text-dark"><%= totalListings %></h2>
+                    <i class="fa-solid fa-house-chimney bg-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-sm border-0 h-100 metric-card" style="border-radius: 1rem; border-left: 5px solid #ffc107 !important;">
+                <div class="card-body p-4 position-relative overflow-hidden">
+                    <h6 class="text-muted fw-bold text-uppercase mb-1">Total Bookings</h6>
+                    <h2 class="fw-bold mb-0 text-dark"><%= totalBookings %></h2>
+                    <i class="fa-solid fa-calendar-check bg-icon text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0" style="border-radius: 1rem;">
+        <div class="card-header bg-white p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f0f0f0; border-radius: 1rem 1rem 0 0;">
+            <h5 class="fw-bold mb-0 text-dark">Platform Users (Latest 20)</h5>
+            <span class="badge bg-light text-dark border px-3 py-2"><i class="fa-solid fa-server me-1 text-success"></i> System Online</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 text-muted text-uppercase" style="font-size: 0.85rem;">Username</th>
+                            <th class="text-muted text-uppercase" style="font-size: 0.85rem;">Email</th>
+                            <th class="text-muted text-uppercase" style="font-size: 0.85rem;">Activity</th>
+                            <th class="text-muted text-uppercase" style="font-size: 0.85rem;">Role</th>
+                            <th class="pe-4 text-end text-muted text-uppercase" style="font-size: 0.85rem;">Quick Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let user of users) { %>
+                            <tr>
+                                <td class="ps-4 fw-bold text-dark"><%= user.username %></td>
+                                <td class="text-muted"><%= user.email %></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge bg-light text-dark border text-start" style="width: 60px;">
+                                            <i class="fa-solid fa-house text-success" style="width: 15px;"></i> <%= user.totalListings || 0 %>
+                                        </span>
+                                        <span class="badge bg-light text-dark border text-start" style="width: 60px;">
+                                            <i class="fa-solid fa-star text-warning" style="width: 15px;"></i> <%= user.totalReviews || 0 %>
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (user.role === 'admin') { %>
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill px-3 py-2">Admin</span>
+                                    <% } else { %>
+                                        <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill px-3 py-2">User</span>
+                                    <% } %>
+                                </td>
+                                <td class="pe-4 text-end">
+                                    <% if (user.role !== 'admin') { %>
+                                        <form method="POST" action="/admin/users/<%= user._id %>/suspend?_method=DELETE" style="display: inline;">
+                                            <button class="btn btn-sm btn-outline-danger fw-bold shadow-sm" style="border-radius: 0.5rem;">
+                                                <i class="fa-solid fa-ban me-1"></i> Suspend
+                                            </button>
+                                        </form>
+                                    <% } else { %>
+                                        <button class="btn btn-sm btn-light text-muted fw-bold disabled border" style="border-radius: 0.5rem;">
+                                            <i class="fa-solid fa-lock me-1"></i> Protected
+                                        </button>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mt-4" style="border-radius: 1rem;">
+        <div class="card-header bg-white p-4 d-flex justify-content-between align-items-center" style="border-bottom: 1px solid #f0f0f0; border-radius: 1rem 1rem 0 0;">
+            <h5 class="fw-bold mb-0 text-dark">Recent Security Logs (Geo-Tracking)</h5>
+            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger px-3 py-2">
+                <i class="fa-solid fa-satellite-dish me-1"></i> Live Feed
+            </span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4 text-muted text-uppercase" style="font-size: 0.85rem;">Timestamp</th>
+                            <th class="text-muted text-uppercase" style="font-size: 0.85rem;">User</th>
+                            <th class="text-muted text-uppercase" style="font-size: 0.85rem;">Location</th>
+                            <th class="pe-4 text-end text-muted text-uppercase" style="font-size: 0.85rem;">IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% for (let log of recentLogs) { %>
+                            <tr>
+                                <td class="ps-4 text-muted" style="font-size: 0.9rem;">
+                                    <%= new Date(log.createdAt).toLocaleString() %>
+                                </td>
+                                <td class="fw-bold text-dark">
+                                    <%= log.user ? log.user.username : 'Deleted User' %> 
+                                </td>
+                                <td>
+                                    <% if (log.city === 'Unknown') { %>
+                                        <span class="text-muted"><i class="fa-solid fa-location-crosshairs me-1"></i> Localhost (Hidden IP)</span>
+                                    <% } else { %>
+                                        <span class="fw-bold text-primary"><i class="fa-solid fa-earth-americas me-1"></i> <%= log.city %>, <%= log.country %></span>
+                                    <% } %>
+                                </td>
+                                <td class="pe-4 text-end text-muted font-monospace" style="font-size: 0.85rem;">
+                                    <%= log.ipAddress %>
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>

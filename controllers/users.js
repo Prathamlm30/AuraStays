@@ -4,6 +4,9 @@ const sendEmail = require("../utils/email");
 const Booking = require("../Models/Booking.js");
 const Listing = require("../Models/Listing.js"); // Required for 2FA deletion
 
+const geoip = require("geoip-lite");
+const SecurityLog = require("../Models/SecurityLog.js");
+
 module.exports.renderSignupForm = (req,res) => {
     res.render("users/signup.ejs");
 };
@@ -94,11 +97,41 @@ module.exports.renderLoginForm = (req,res) => {
     res.render("users/login.ejs");
 };
 
-module.exports.login = async(req,res) => {
-    req.flash("success","Welcome back to AuraStays!");
+module.exports.login = async (req, res) => {
+    // --- 1. THREAT DETECTION: Geographic Logging ---
+    // Grab the IP address from the incoming request
+    let ip = req.ip || req.connection.remoteAddress;
+
+    // 🚨 LOCALHOST TESTING CHEAT: 
+    // Uncomment the line below to simulate a login from London, UK.
+    // Make sure to delete or re-comment this line before you push to production!
+   // ip = "207.97.227.239"; 
+
+    // Translate the IP to a physical location
+    const geo = geoip.lookup(ip);
+    const city = geo ? geo.city : "Unknown";
+    const country = geo ? geo.country : "Unknown";
+
+    try {
+        // Save the log to the database silently
+        const newLog = new SecurityLog({
+            user: req.user._id,
+            ipAddress: ip,
+            city: city,
+            country: country
+        });
+        await newLog.save();
+    } catch (err) {
+        console.error("Security Logging Error:", err);
+    }
+    // -----------------------------------------------
+
+    // --- 2. Normal Login Execution ---
+    req.flash("success", "Welcome back to AuraStays!");
     let redirectUrl = res.locals.redirectUrl || "/listings";
     res.redirect(redirectUrl);
 };
+
 
 module.exports.logout = (req,res,next) => {
     req.logout((err) => {
