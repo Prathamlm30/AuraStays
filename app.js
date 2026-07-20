@@ -138,6 +138,7 @@ store.on("error", (err) => {
 });
 
 // 2. Configure session options to use the store and env secret
+// 2. Configure session options for Production (Render)
 const sessionOptions = {
     store: store,
     secret: process.env.SECRET,
