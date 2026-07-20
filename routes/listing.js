@@ -7,8 +7,19 @@ const listingController = require("../controllers/listings.js");
 const multer = require("multer");
 const {storage} = require("../cloudConfig.js");
 const upload = multer({storage});
-
 const bookingController = require("../controllers/bookings.js");
+
+// ==========================================
+// AI RATE LIMITER
+// ==========================================
+const rateLimit = require("express-rate-limit");
+const aiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 5, // Limit each IP to 5 AI requests per hour
+    message: "AI quota exceeded for this hour. Please try again later.",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 router.route("/")
     //index route
@@ -19,15 +30,19 @@ router.route("/")
 //new route
 router.get("/new",isLoggedIn, listingController.renderNewForm);
 
+// ==========================================
+// PROTECTED AI ROUTES
+// ==========================================
 // ai insights route...
-router.get("/:id/ai-summary", wrapAsync(listingController.getAISummary));
+router.get("/:id/ai-summary", aiLimiter, wrapAsync(listingController.getAISummary));
 
 // NEW: Consumer AI Trip Planner Route
-router.get("/:id/ai-itinerary", wrapAsync(listingController.getAITripItinerary));
+router.get("/:id/ai-itinerary", aiLimiter, wrapAsync(listingController.getAITripItinerary));
 
 // NEW: AI Natural Language Search Route
 // MUST GO ABOVE router.route("/:id")
-router.get("/search", wrapAsync(listingController.searchListings));
+router.get("/search", aiLimiter, wrapAsync(listingController.searchListings));
+
 
 // Fetch booked dates for Flatpickr
 router.get("/:id/booked-dates", wrapAsync(bookingController.getBookedDates));

@@ -10,7 +10,7 @@ const mongoose = require("mongoose");
 const dbUrl = process.env.ATLASDB_URL;
 const path = require("path");
 const methodOverride = require("method-override");
-const ejsMate = require("ejs-mate"); //ejs-mate is required for creating layouts and templates.
+const ejsMate = require("ejs-mate"); 
 const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
@@ -18,13 +18,20 @@ const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./Models/user.js");
 
+// ==========================================
+// SECURITY PACKAGES
+// ==========================================
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const rateLimit = require("express-rate-limit");
+
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 const adminRouter = require("./routes/admin.js");
+const legalRouter = require("./routes/legal.js");
 
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-
 const MongoStore = require('connect-mongo')(session);
 
 main()
@@ -45,6 +52,66 @@ app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
+
+// ==========================================
+// 1. MONGO DB INJECTION PROTECTION
+// ==========================================
+// Removes prohibited characters (like $) from req.body, req.query, and req.params
+app.use(mongoSanitize());
+
+// ==========================================
+// 2. HTTP SHIELD (HELMET) & CSP WHITELIST
+// ==========================================
+app.use(helmet());
+
+const scriptSrcUrls = [
+    "https://stackpath.bootstrapcdn.com/",
+    "https://api.tiles.mapbox.com/",
+    "https://api.mapbox.com/",
+    "https://cdnjs.cloudflare.com/",
+    "https://cdn.jsdelivr.net/", 
+];
+const styleSrcUrls = [
+    "https://kit-free.fontawesome.com/",
+    "https://stackpath.bootstrapcdn.com/",
+    "https://api.mapbox.com/",
+    "https://api.tiles.mapbox.com/",
+    "https://fonts.googleapis.com/",
+    "https://use.fontawesome.com/",
+    "https://cdn.jsdelivr.net/", 
+    "https://cdnjs.cloudflare.com/", 
+];
+const connectSrcUrls = [
+    "https://api.mapbox.com/",
+    "https://a.tiles.mapbox.com/",
+    "https://b.tiles.mapbox.com/",
+    "https://events.mapbox.com/",
+];
+const fontSrcUrls = [
+    "https://fonts.gstatic.com/", 
+    "https://cdnjs.cloudflare.com/"
+];
+
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: [],
+            connectSrc: ["'self'", ...connectSrcUrls],
+            scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
+            styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
+            workerSrc: ["'self'", "blob:"],
+            objectSrc: [],
+            imgSrc: [
+                "'self'",
+                "blob:",
+                "data:",
+                "https://res.cloudinary.com/", // Allows Cloudinary images
+                "https://images.unsplash.com/", // For dummy seed images
+            ],
+            fontSrc: ["'self'", ...fontSrcUrls],
+        },
+    })
+);
 
 // 1. Create the Mongo Store using your cloud database and secret
 const store = new MongoStore({
@@ -70,10 +137,6 @@ const sessionOptions = {
     },
 };
 
-// app.get("/", (req,res) => {
-//     res.send("Hi, I am root!");
-// });
-
 app.use(session(sessionOptions));
 app.use(flash());
 
@@ -90,30 +153,24 @@ passport.use(new GoogleStrategy({
   },
   async function(accessToken, refreshToken, profile, cb) {
     try {
-        // 1. Check if this Google user already exists in our database
         let user = await User.findOne({ googleId: profile.id });
         if (user) {
             return cb(null, user);
         }
         
-        // 2. Check if a user signed up locally with this exact email
         user = await User.findOne({ email: profile.emails[0].value });
         if(user) {
-            // Link their new Google ID to their existing local account
             user.googleId = profile.id;
             await user.save();
             return cb(null, user);
         }
 
-        // 3. If they are a brand new user, create a new MongoDB document
         const newUser = new User({
             email: profile.emails[0].value,
-            // Generate a unique username from their Google name
             username: profile.displayName.replace(/\s+/g, '') + Math.floor(Math.random() * 1000), 
             googleId: profile.id
         });
         
-        // Give them a complex dummy password since they will use Google to log in
         const dummyPassword = Math.random().toString(36).slice(-12);
         const registeredUser = await User.register(newUser, dummyPassword);
         
@@ -135,38 +192,32 @@ app.use((req,res,next) => {
     next();
 });
 
-// app.get("/demouser", async(req,res) => {
-//     let fakeUser = new User({
-//         email: "student@gmail.com",
-//         username: "delta-student",
-//     });
+// ==========================================
+// 3. RATE LIMITERS (Auth Protection)
+// ==========================================
 
-//     let registeredUser = await User.register(fakeUser, "helloworld");
-//     res.send(registeredUser);
-// });
+// Limits login/signup attempts to 5 per 15 minutes
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
+    message: "Too many login attempts from this IP, please try again after 15 minutes",
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// Apply rate limiters to specific vulnerable routes
+app.use("/login", authLimiter);
+app.use("/signup", authLimiter);
 
 app.use("/listings",listingRouter);
 app.use("/listings/:id/reviews",reviewRouter);
 app.use("/",userRouter);
 app.use("/admin", adminRouter);
+app.use("/legal", legalRouter);
 
 app.get("/", (req, res) => {
   res.redirect("/listings");
 });
-
-// app.get("/testListing", async (req,res) => {
-//     let sampleListing = new Listing({
-//         title: "My New Villa",
-//         description: "By the beach",
-//         price: 1200,
-//         location: "Munich",
-//         country: "Germany",
-//     });
-
-//     await sampleListing.save();
-//     console.log("sample was saved");
-//     res.send("succesfull");
-// });
 
 app.all("/{*path}", (req,res,next) => {
     next(new ExpressError(404,"page not found"));
@@ -174,8 +225,6 @@ app.all("/{*path}", (req,res,next) => {
 
 app.use((err,req,res,next) => {
     let {statusCode=500, message="something went wrong"} = err;
-    //res.send("something went wrong.")
-    //res.status(statusCode).send(message);
     res.status(statusCode).render("listings/error.ejs", {err});
 });
 

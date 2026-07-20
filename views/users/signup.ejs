@@ -35,6 +35,19 @@
                         <input name="password" id="password" type="password" class="form-control" placeholder="Password" style="border-radius: 0.75rem;" required>
                         <label for="password">Password</label>
                     </div>
+
+                    <!-- Legal Consent Checkbox (Clickwrap Agreement) -->
+                    <div class="form-check mb-4 px-1 d-flex gap-2 align-items-start">
+                        <input class="form-check-input mt-1" type="checkbox" value="" id="legalConsent" required>
+                        <label class="form-check-label text-muted" style="font-size: 0.85rem; line-height: 1.4;" for="legalConsent">
+                            By creating an account, I agree to AuraStays' 
+                            <a href="/legal/terms" target="_blank" style="color: #fe424d; text-decoration: none; font-weight: 500;">Terms & Conditions</a> and acknowledge the 
+                            <a href="/legal/privacy" target="_blank" style="color: #fe424d; text-decoration: none; font-weight: 500;">Privacy Policy</a>.
+                        </label>
+                        <div class="invalid-feedback mt-0">
+                            You must agree before submitting.
+                        </div>
+                    </div>
                     
                     <button class="btn w-100 py-3 text-white fw-bold mb-3" style="background-color: #fe424d; border-radius: 0.75rem; font-size: 1.1rem; border: none;">
                         Sign Up
@@ -51,6 +64,10 @@
                 <a href="/auth/google" class="btn btn-outline-dark w-100 py-2 fw-semibold d-flex justify-content-center align-items-center gap-2 mb-4" style="border-radius: 0.75rem;">
                     <i class="fa-brands fa-google text-danger"></i> Continue with Google
                 </a>
+
+                <p class="text-muted mb-4" style="font-size: 0.75rem; text-align: center;">
+                    By continuing with Google, you agree to our <a href="/legal/terms" class="text-dark fw-bold">Terms</a> and <a href="/legal/privacy" class="text-dark fw-bold">Privacy Policy</a>.
+                </p>
 
                 <div class="text-center">
                     <p class="text-muted mb-0">Already have an account? 
