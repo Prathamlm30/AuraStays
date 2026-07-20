@@ -142,11 +142,13 @@ const sessionOptions = {
     store: store,
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false, // Changing to false prevents empty sessions from clogging your DB
+    proxy: true,             // CRITICAL: Tells the session to trust Render's load balancer
     cookie: {
         expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
+        secure: false,       // Keep false unless you have a custom SSL certificate
     },
 };
 
