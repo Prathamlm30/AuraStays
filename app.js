@@ -54,6 +54,19 @@ app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 // ==========================================
+
+// FIX: Express 5 compatibility for sanitization
+// ==========================================
+app.use((req, res, next) => {
+    Object.defineProperty(req, 'query', {
+        value: { ...req.query },
+        writable: true,
+        configurable: true,
+        enumerable: true,
+    });
+    next();
+});
+
 // 1. MONGO DB INJECTION PROTECTION
 // ==========================================
 // Removes prohibited characters (like $) from req.body, req.query, and req.params
