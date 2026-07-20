@@ -4,7 +4,7 @@ if(process.env.NODE_ENV != "production") {
 
 const express = require("express");
 const app = express();
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 const mongoose = require("mongoose");
 //const MONGO_URL = 'mongodb://127.0.0.1:27017/airbnb';
 const dbUrl = process.env.ATLASDB_URL;
