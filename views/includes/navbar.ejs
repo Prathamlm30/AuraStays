@@ -20,7 +20,7 @@
     padding: 0.5rem 3rem 0.5rem 3rem;
   }
 
-  /* NEW: Modern Profile Pill Styles */
+  /* Modern Profile Pill Styles */
   .profile-pill {
     border: 1px solid #dddddd;
     border-radius: 30px;
@@ -49,7 +49,7 @@
     font-size: 1rem;
   }
 
-  /* NEW: Dropdown Menu Aesthetics */
+  /* Dropdown Menu Aesthetics */
   .profile-dropdown {
     border-radius: 1rem;
     min-width: 240px;
@@ -72,7 +72,7 @@
     border-color: #ebebeb;
   }
 
-/* OPTION 2: Liquid Titanium */
+/* Liquid Titanium Brand Text */
 .brand-titanium {
     background: linear-gradient(
         90deg,
@@ -104,7 +104,6 @@
     100% { transform: scale(1.2); opacity: 1; }
 }
 
-/* Optional: Slight hover lift for the whole brand section */
 .navbar-brand {
     transition: transform 0.3s ease;
 }
@@ -131,7 +130,7 @@
         <a class="nav-link" href="/listings">Explore</a>
       </div>
 
-    <% if (!locals.currentPath || (locals.currentPath !== '/login' && locals.currentPath !== '/signup')) { %>
+    <% if (typeof currentPath === 'undefined' || (currentPath !== '/login' && currentPath !== '/signup')) { %>
       <div class="navbar-nav ms-auto">
         <form class="d-flex align-items-center" role="search" action="/listings/search" method="GET">
           <input 
@@ -151,28 +150,28 @@
       <div class="navbar-nav ms-auto align-items-center">
         <a class="nav-link me-3 fw-semibold" style="color: #222;" href="/listings/new">Become a Host</a>
         
-        <% if(!locals.currUser) { %>
+        <!-- FIX: Standardized authentication check using currUser instead of locals.currUser -->
+        <% if(!currUser) { %>
           <a class="nav-link" href="/signup"><b>Sign Up</b></a>
           <a class="nav-link" href="/login"><b>Login</b></a>
-        <% } %>
-        
-        <% if(locals.currUser) { %>
+        <% } else { %>
           <div class="nav-item dropdown">
             <a class="nav-link dropdown-toggle d-flex align-items-center gap-2 profile-pill" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="fa-solid fa-bars text-muted ms-2 fs-6"></i>
                 <div class="user-avatar">
-                    <%= locals.currUser.username.charAt(0).toUpperCase() %>
+                    <!-- Extract the first letter of the username -->
+                    <%= currUser.username.charAt(0).toUpperCase() %>
                 </div>
             </a>
             
             <ul class="dropdown-menu dropdown-menu-end profile-dropdown">
                 <li class="px-4 py-3 border-bottom mb-2">
-                    <div class="fw-bold fs-6 text-dark" style="text-transform: capitalize;"><%= locals.currUser.username %></div>
-                    <div class="text-muted" style="font-size: 0.85rem;"><%= locals.currUser.email %></div>
+                    <div class="fw-bold fs-6 text-dark" style="text-transform: capitalize;"><%= currUser.username %></div>
+                    <div class="text-muted" style="font-size: 0.85rem;"><%= currUser.email %></div>
                 </li>
 
                 <!-- Admin-Only Command Center Link -->
-                <% if (locals.currUser && locals.currUser.role === 'admin') { %>
+                <% if (currUser.role === 'admin') { %>
                     <a class="dropdown-item fw-bold text-danger" href="/admin/dashboard">
                         <i class="fa-solid fa-shield-halved me-2"></i> Command Center
                     </a>
