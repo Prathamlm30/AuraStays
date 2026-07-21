@@ -6,7 +6,6 @@ const express = require("express");
 const app = express();
 app.set("trust proxy", 1);
 const mongoose = require("mongoose");
-//const MONGO_URL = 'mongodb://127.0.0.1:27017/airbnb';
 const dbUrl = process.env.ATLASDB_URL;
 const path = require("path");
 const methodOverride = require("method-override");
@@ -54,7 +53,6 @@ app.engine("ejs",ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
 // ==========================================
-
 // FIX: Express 5 compatibility for sanitization
 // ==========================================
 app.use((req, res, next) => {
@@ -69,7 +67,6 @@ app.use((req, res, next) => {
 
 // 1. MONGO DB INJECTION PROTECTION
 // ==========================================
-// Removes prohibited characters (like $) from req.body, req.query, and req.params
 app.use(mongoSanitize());
 
 // ==========================================
@@ -83,7 +80,7 @@ const scriptSrcUrls = [
     "https://api.mapbox.com/",
     "https://cdnjs.cloudflare.com/",
     "https://cdn.jsdelivr.net/",
-    "https://unpkg.com/", // FIX: Whitelist Leaflet Scripts
+    "https://unpkg.com/", 
 ];
 const styleSrcUrls = [
     "https://kit-free.fontawesome.com/",
@@ -94,7 +91,7 @@ const styleSrcUrls = [
     "https://use.fontawesome.com/",
     "https://cdn.jsdelivr.net/", 
     "https://cdnjs.cloudflare.com/", 
-    "https://unpkg.com/", // FIX: Whitelist Leaflet Styles
+    "https://unpkg.com/", 
 ];
 const connectSrcUrls = [
     "https://api.mapbox.com/",
@@ -122,11 +119,11 @@ app.use(
                 "data:",
                 "https://res.cloudinary.com/", 
                 "https://images.unsplash.com/", 
-                "https://tile.openstreetmap.org/", // FIX: Allow Leaflet Map Tiles
+                "https://tile.openstreetmap.org/", 
                 "https://a.tile.openstreetmap.org/",
                 "https://b.tile.openstreetmap.org/",
                 "https://c.tile.openstreetmap.org/",
-                "https://unpkg.com/" // FIX: Allow Leaflet Marker Images
+                "https://unpkg.com/" 
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
         },
@@ -150,13 +147,13 @@ const sessionOptions = {
     store: store,
     secret: process.env.SECRET || "fallback_aurastays_secret_123",
     resave: false,
-    saveUninitialized: false,
-    proxy: true, // MUST be true on Render
+    saveUninitialized: true, // FIX: Changed to true so flash messages work for logged-out users
+    proxy: true, 
     cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: true, 
-        sameSite: 'none' // CRITICAL: Allows Google OAuth to keep the session cookie
+        sameSite: 'none' 
     },
 };
 
@@ -216,10 +213,8 @@ app.use((req,res,next) => {
 });
 
 // ==========================================
-// 3. RATE LIMITERS (Auth Protection)
+// 4. RATE LIMITERS (Auth Protection)
 // ==========================================
-
-// Limits login/signup attempts to 5 per 15 minutes
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
     max: 5, 
@@ -228,7 +223,6 @@ const authLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-// Apply rate limiters to specific vulnerable routes
 app.use("/login", authLimiter);
 app.use("/signup", authLimiter);
 
