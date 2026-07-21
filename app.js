@@ -145,7 +145,7 @@ store.on("error", (err) => {
 
 const sessionOptions = {
     store: store,
-    name: "aura_session", // FIX 1: New name bypasses all old, corrupted cookies
+    name: "aura_session", 
     secret: process.env.SECRET || "fallback_aurastays_secret_123",
     resave: false,
     saveUninitialized: true,
@@ -153,13 +153,32 @@ const sessionOptions = {
     cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: true, 
-        sameSite: 'lax' // FIX 2: 'lax' is the standard for secure, first-party cookies
+        secure: false,  // FIX 1: Let Render handle HTTPS, keep the cookie flexible
+        sameSite: 'lax' 
     },
 };
 
 app.use(session(sessionOptions));
 app.use(flash());
+
+// ==========================================
+// FIX 2: THE MONGODB RACE CONDITION PATCH
+// ==========================================
+// This forces Express to wait for the session (and flash message) 
+// to fully save to Atlas BEFORE redirecting the user.
+app.use((req, res, next) => {
+    const originalRedirect = res.redirect;
+    res.redirect = function (...args) {
+        if (req.session && req.session.save) {
+            req.session.save(() => {
+                originalRedirect.apply(res, args);
+            });
+        } else {
+            originalRedirect.apply(res, args);
+        }
+    };
+    next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());
