@@ -82,7 +82,8 @@ const scriptSrcUrls = [
     "https://api.tiles.mapbox.com/",
     "https://api.mapbox.com/",
     "https://cdnjs.cloudflare.com/",
-    "https://cdn.jsdelivr.net/", 
+    "https://cdn.jsdelivr.net/",
+    "https://unpkg.com/", // FIX: Whitelist Leaflet Scripts
 ];
 const styleSrcUrls = [
     "https://kit-free.fontawesome.com/",
@@ -93,6 +94,7 @@ const styleSrcUrls = [
     "https://use.fontawesome.com/",
     "https://cdn.jsdelivr.net/", 
     "https://cdnjs.cloudflare.com/", 
+    "https://unpkg.com/", // FIX: Whitelist Leaflet Styles
 ];
 const connectSrcUrls = [
     "https://api.mapbox.com/",
@@ -118,18 +120,25 @@ app.use(
                 "'self'",
                 "blob:",
                 "data:",
-                "https://res.cloudinary.com/", // Allows Cloudinary images
-                "https://images.unsplash.com/", // For dummy seed images
+                "https://res.cloudinary.com/", 
+                "https://images.unsplash.com/", 
+                "https://tile.openstreetmap.org/", // FIX: Allow Leaflet Map Tiles
+                "https://a.tile.openstreetmap.org/",
+                "https://b.tile.openstreetmap.org/",
+                "https://c.tile.openstreetmap.org/",
+                "https://unpkg.com/" // FIX: Allow Leaflet Marker Images
             ],
             fontSrc: ["'self'", ...fontSrcUrls],
         },
     })
 );
 
-// 1. Create the Mongo Store using your cloud database and secret
+// ==========================================
+// 3. SESSION CONFIGURATION (Render Ready)
+// ==========================================
 const store = new MongoStore({
     url: dbUrl,
-    secret: process.env.SECRET,
+    secret: process.env.SECRET || "fallback_aurastays_secret_123",
     touchAfter: 24 * 3600,
 });
 
@@ -137,17 +146,18 @@ store.on("error", (err) => {
     console.log("ERROR in MONGO SESSION STORE", err);
 });
 
-// 2. Configure session options for Production (Render)
-// 2. Configure session options for Production (Render)
 const sessionOptions = {
     store: store,
     secret: process.env.SECRET || "fallback_aurastays_secret_123",
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    proxy: true, // MUST be true on Render
     cookie: {
-        maxAge: 7 * 24 * 60 * 60 * 1000, // This automatically handles expiration perfectly
-        httpOnly: true
-    }
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        secure: true, 
+        sameSite: 'none' // CRITICAL: Allows Google OAuth to keep the session cookie
+    },
 };
 
 app.use(session(sessionOptions));
