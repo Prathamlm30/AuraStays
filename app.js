@@ -145,15 +145,16 @@ store.on("error", (err) => {
 
 const sessionOptions = {
     store: store,
+    name: "aura_session", // FIX 1: New name bypasses all old, corrupted cookies
     secret: process.env.SECRET || "fallback_aurastays_secret_123",
     resave: false,
-    saveUninitialized: true, // FIX: Changed to true so flash messages work for logged-out users
+    saveUninitialized: true,
     proxy: true, 
     cookie: {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: true, 
-        sameSite: 'none' 
+        sameSite: 'lax' // FIX 2: 'lax' is the standard for secure, first-party cookies
     },
 };
 
