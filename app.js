@@ -138,20 +138,16 @@ store.on("error", (err) => {
 });
 
 // 2. Configure session options for Production (Render)
+// 2. Configure session options for Production (Render)
 const sessionOptions = {
     store: store,
-    secret: process.env.SECRET,
+    secret: process.env.SECRET || "fallback_aurastays_secret_123",
     resave: false,
-    saveUninitialized: false, 
-    proxy: true,             
+    saveUninitialized: true,
     cookie: {
-        // FIX 1: Wrap the expiration in a Date object
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        httpOnly: true,
-        // FIX 2: Render uses HTTPS, so the cookie must be secure
-        secure: true, 
-    },
+        maxAge: 7 * 24 * 60 * 60 * 1000, // This automatically handles expiration perfectly
+        httpOnly: true
+    }
 };
 
 app.use(session(sessionOptions));
