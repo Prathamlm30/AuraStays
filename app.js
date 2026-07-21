@@ -137,19 +137,20 @@ store.on("error", (err) => {
     console.log("ERROR in MONGO SESSION STORE", err);
 });
 
-// 2. Configure session options to use the store and env secret
 // 2. Configure session options for Production (Render)
 const sessionOptions = {
     store: store,
     secret: process.env.SECRET,
     resave: false,
-    saveUninitialized: false, // Changing to false prevents empty sessions from clogging your DB
-    proxy: true,             // CRITICAL: Tells the session to trust Render's load balancer
+    saveUninitialized: false, 
+    proxy: true,             
     cookie: {
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        // FIX 1: Wrap the expiration in a Date object
+        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        secure: false,       // Keep false unless you have a custom SSL certificate
+        // FIX 2: Render uses HTTPS, so the cookie must be secure
+        secure: true, 
     },
 };
 
