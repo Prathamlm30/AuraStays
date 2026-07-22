@@ -16,8 +16,23 @@ router.route("/signup")
 
 router.route("/login")
     .get(userController.renderLoginForm)
-    .post(saveRedirectUrl,loginLimiter, passport.authenticate("local", {failureRedirect: "/login", failureFlash: true}), userController.login);
-
+    // FIX: Intercept Passport to force a session save on failed login
+    .post(saveRedirectUrl, loginLimiter, (req, res, next) => {
+        passport.authenticate("local", (err, user, info) => {
+            if (err) return next(err);
+            if (!user) {
+                // Flash the error and WAIT for it to save
+                req.flash("error", info.message || "Invalid username or password.");
+                return req.session.save(() => {
+                    res.redirect("/login");
+                });
+            }
+            req.logIn(user, (err) => {
+                if (err) return next(err);
+                next(); // Proceed to userController.login on success
+            });
+        })(req, res, next);
+    }, userController.login);
 
 // Add these right below your router.route("/login") block:
 router.route("/verify-otp")
