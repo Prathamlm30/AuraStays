@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "test:api": "jest jest_supertest_tests --watchAll --detectOpenHandles"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +35,24 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^9.1.0",
-    "sanitize-html": "^2.17.6"
+    "sanitize-html": "^2.11.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.1",
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2"
+  },
+  "allowScripts": {
+    "mongodb-memory-server@11.2.0": true,
+    "unrs-resolver@1.12.2": true
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/playwright_tests/"
+    ]
   }
 }

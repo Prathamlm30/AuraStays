@@ -101,8 +101,8 @@ module.exports.login = async (req, res) => {
     const geo = geoip.lookup(ip);
     const city = geo ? geo.city : "Unknown";
     const country = geo ? geo.country : "Unknown";
-    const lat = geo ? geo.ll[0] : null;
-    const lon = geo ? geo.ll[1] : null;
+    const lat = (geo && geo.ll) ? geo.ll[0] : null;
+    const lon = (geo && geo.ll) ? geo.ll[1] : null;
 
     try {
         if (lat && lon) {
@@ -123,21 +123,25 @@ module.exports.login = async (req, res) => {
                     req.user.otpExpires = Date.now() + 10 * 60 * 1000;
                     await req.user.save();
 
-                    await sendSecurityEmail({
-                        email: req.user.email,
-                        subject: "AuraStays Security: Suspicious Login Detected",
-                        message: `
-                            <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
-                                <h2 style="color: #fe424d;">Security Alert</h2>
-                                <p>We detected a login from <strong>${city}, ${country}</strong> that doesn't match your recent travel history.</p>
-                                <p>If this was you, please enter the following code to verify your identity:</p>
-                                <h1 style="background: #f4f4f4; padding: 15px; letter-spacing: 5px; text-align: center;">${otp}</h1>
-                                <p style="color: #888; font-size: 12px;">This code expires in 10 minutes. If you did not initiate this login, please change your password immediately.</p>
-                            </div>
-                        `
-                    });
+                    // Safely attempt email dispatch without breaking security flow
+                    try {
+                        await sendSecurityEmail({
+                            email: req.user.email,
+                            subject: "AuraStays Security: Suspicious Login Detected",
+                            message: `
+                                <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
+                                    <h2 style="color: #fe424d;">Security Alert</h2>
+                                    <p>We detected a login from <strong>${city}, ${country}</strong> that doesn't match your recent travel history.</p>
+                                    <p>If this was you, please enter the following code to verify your identity:</p>
+                                    <h1 style="background: #f4f4f4; padding: 15px; letter-spacing: 5px; text-align: center;">${otp}</h1>
+                                </div>
+                            `
+                        });
+                    } catch (emailErr) {
+                        console.error("Security Email Dispatch Warning:", emailErr.message);
+                    }
 
-                    // Redirect to the newly engineered Soft Block route
+                    // Always enforce the security redirect even if SMTP fails locally
                     return res.redirect("/verify-security-otp"); 
                 }
             }

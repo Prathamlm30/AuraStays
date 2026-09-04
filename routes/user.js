@@ -39,6 +39,10 @@ router.route("/verify-otp")
     .get(userController.renderOtpForm)
     .post(wrapAsync(userController.verifyOtp));
 
+// --- NEW: Impossible Travel Security Routes ---
+router.route("/verify-security-otp")
+    .get(userController.renderSecurityVerify)
+    .post(wrapAsync(userController.verifySecurityOtp));
 
 router.get("/logout", userController.logout);
 

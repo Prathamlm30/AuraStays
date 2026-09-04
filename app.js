@@ -237,7 +237,8 @@ app.use((req,res,next) => {
 // ==========================================
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, 
-    max: 5, 
+    // Allow 100 attempts in testing, but strictly 5 in production
+    max: process.env.NODE_ENV === "production" ? 5 : 100, 
     message: "Too many login attempts from this IP, please try again after 15 minutes",
     standardHeaders: true,
     legacyHeaders: false,
@@ -265,6 +266,9 @@ app.use((err,req,res,next) => {
     res.status(statusCode).render("listings/error.ejs", {err});
 });
 
-app.listen("8080", () => {
-    console.log("server is listening to port 8080..");
-});
+if (require.main === module) {
+    app.listen(8080, () => {
+        console.log("server is listening to port 8080..");
+    });
+}
+module.exports = app;
