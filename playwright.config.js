@@ -27,7 +27,6 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
     // Commented out extra browsers to avoid running tests 3x simultaneously on localhost
     // {
     //   name: 'firefox',
@@ -37,5 +36,13 @@ export default defineConfig({
     //   name: 'webkit',
     //   use: { ...devices['Desktop Safari'] },
     // },
-  ],
+  ], // <--- The projects array properly closes here
+
+  /* Tell Playwright to start the local backend server before running tests */
+  webServer: {
+    command: 'node app.js', 
+    url: 'http://localhost:8080',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // Give the server 2 minutes to boot and connect to Atlas
+  },
 });
