@@ -2,7 +2,7 @@
 
 ![AuraStays Banner](https://images.unsplash.com/photo-1501183638710-841dd1904471?q=80&w=2070&auto=format&fit=crop)
 
-> A full-stack accommodation booking platform inspired by Airbnb — built with Node.js, Express, and MongoDB. AuraStays goes beyond a typical CRUD clone by implementing an **enterprise-grade geographic security engine**, AI-powered trip insights, interactive mapping, and a real-time booking system.
+> A full-stack accommodation booking platform inspired by Airbnb — built with Node.js, Express, and MongoDB. AuraStays goes beyond a typical CRUD clone by implementing an **enterprise-grade geographic security engine**, a **5-layer OWASP-aligned defense architecture**, an **automated CI/CD pipeline**, AI-powered trip insights, interactive mapping, and a real-time booking system.
 
 **[🌍 View Live Application](https://aurastays-nwll.onrender.com)** &nbsp;|&nbsp; **[💻 Source Code](https://github.com/Prathamlm30/AuraStays)**
 
@@ -10,13 +10,16 @@
 
 ## 🎯 Why This Project Stands Out
 
-Most student booking-app clones stop at CRUD + auth. AuraStays adds a security layer modeled on techniques used by real fintech and enterprise platforms:
+Most student booking-app clones stop at CRUD + auth. AuraStays adds a security, testing, and deployment layer modeled on techniques used by real fintech and enterprise platforms:
 
 - **Impossible Travel Detection** — flags account compromise by calculating whether two logins from the same account are geographically plausible within the elapsed time.
 - **Risk-Based Step-Up Authentication** — sensitive actions (payout changes, listing deletion) require an OTP challenge instead of blanket 2FA on every login, balancing security with UX.
+- **5-Layer OWASP Security Architecture** — a defense-in-depth stack covering HTTP headers, NoSQL injection, XSS, brute-force, and API-abuse vectors (full breakdown below).
+- **Enterprise-Grade Testing Infrastructure** — 17 Jest/Supertest integration tests plus a full Playwright E2E suite, both at a 100% pass rate.
+- **Automated CI/CD Pipeline** — every push triggers a GitHub Actions workflow that provisions a clean environment and runs the entire E2E suite before code is trusted.
 - **Admin Command Center** — a live operations dashboard giving platform admins visibility into users, listings, bookings, and raw geo-security logs in real time.
 
-This mirrors how production systems (banking apps, SaaS platforms) approach account-takeover prevention, making it a strong talking point for security-and-backend-focused interviews.
+Together, this mirrors how production systems (banking apps, SaaS platforms) approach account-takeover prevention, defense-in-depth hardening, and release safety — making AuraStays a strong talking point for security-, backend-, and DevOps-focused interviews.
 
 ---
 
@@ -28,6 +31,25 @@ This mirrors how production systems (banking apps, SaaS platforms) approach acco
 - **Geographic Session Tracking** — parses proxy headers (`x-forwarded-for`) to resolve true client IPs behind cloud load balancers, then maps them to coordinates via `geoip-lite` and persists them to MongoDB for auditing.
 - **Action-Specific Soft Blocks** — gates sensitive operations (editing bank payout details, deleting listings) behind OTP re-verification rather than blocking the entire session.
 - **Admin Command Center** — a dedicated `/admin` dashboard showing total users, active listings, total bookings, a live user-management table (suspend/promote), and a real-time feed of security/geo-tracking logs.
+
+### 🧱 5-Layer OWASP Security Architecture
+A defense-in-depth pipeline where every request is filtered through five independent hardening layers before it reaches business logic:
+
+| Layer | Name | Defense | Implementation |
+|:---:|---|---|---|
+| **1** | HTTP Shield | Secures response headers & hides the underlying tech stack | `Helmet.js` |
+| **2** | Database Guardian | Strips MongoDB operator keys to block NoSQL injection | `express-mongo-sanitize` |
+| **3** | Input Cleanser | Strips malicious `<script>` payloads to prevent XSS, backed by schema validation | `sanitize-html` + `Joi` |
+| **4** | Authentication Blocker | Throttles login attempts by IP to stop brute-force credential attacks | Custom IP-based rate limiting |
+| **5** | API Wallet Protector | Throttles calls to Gemini AI routes to prevent quota exhaustion & API abuse | Route-specific rate limiting |
+
+### 🧪 Enterprise-Grade Testing Infrastructure
+- **Backend / API Testing** — a Jest & Supertest integration suite (**17 tests**) using `mongodb-memory-server` for fully isolated, leak-free database testing; external services (Brevo, Mapbox, Cloudinary) are mocked so tests run deterministically offline.
+- **Frontend / E2E Testing** — Playwright drives full-stack browser automation across critical user journeys, including the AI Trip Planner flow and the Impossible Travel OTP challenge.
+- **100% pass rate** maintained across both the API and UI test suites.
+
+### ⚙️ CI/CD Pipeline
+- A GitHub Actions workflow triggers on every push: it provisions a clean Node.js environment, securely injects encrypted repository secrets (`ENV_FILE`), boots the application server, and runs the full Playwright E2E suite — catching regressions before they ever reach deployment.
 
 ### 🔐 Authentication & Authorization
 - **OAuth 2.0** — Google sign-in via Passport.js.
@@ -66,6 +88,20 @@ This mirrors how production systems (banking apps, SaaS platforms) approach acco
 - Joi (server-side schema validation)
 - GeoIP-Lite & Node's native Crypto module (security engine)
 
+**Security & Hardening**
+- Helmet.js (secure HTTP headers)
+- express-mongo-sanitize (NoSQL injection prevention)
+- sanitize-html (XSS prevention)
+- Custom IP-based rate limiting (auth & AI routes)
+
+**Testing & Quality**
+- Jest & Supertest (backend/API integration testing)
+- mongodb-memory-server (isolated, in-memory test database)
+- Playwright (frontend E2E & browser automation)
+
+**DevOps & CI/CD**
+- GitHub Actions (automated build, secret injection, and E2E test pipeline)
+
 **Cloud, Delivery & APIs**
 - Mapbox API (geocoding & maps)
 - Cloudinary (image hosting)
@@ -78,13 +114,16 @@ This mirrors how production systems (banking apps, SaaS platforms) approach acco
 
 ```text
 AuraStays/
+├── .github/
+│   └── workflows/    # GitHub Actions CI/CD pipeline definitions
 ├── controllers/      # Route logic (listings, users, bookings, reviews, admin)
 ├── models/           # Mongoose schemas (Listing, User, Review, Booking, SecurityLog)
 ├── routes/           # Express router definitions
+├── tests/            # Jest/Supertest API tests + Playwright E2E specs
 ├── utils/            # Helper engines (geoMath.js, sendEmail.js)
 ├── views/            # EJS templates (layouts, listings, users, auth, admin)
 ├── public/           # Static assets (CSS, client-side JS, images)
-├── middleware.js     # Custom authentication and validation middleware
+├── middleware.js     # Custom authentication, security, and validation middleware
 ├── cloudConfig.js    # Cloudinary setup
 └── app.js            # Main application entry point
 ```
@@ -175,6 +214,16 @@ node app.js
 
 The application will be running at `http://localhost:8080`.
 
+### 5. Run the Test Suites (Optional)
+
+```bash
+# Run the Jest/Supertest API test suite
+npm test
+
+# Run the Playwright E2E suite
+npx playwright test
+```
+
 ---
 
 ## 🧑‍💻 About the Developer
@@ -183,7 +232,9 @@ The application will be running at `http://localhost:8080`.
 
 Engineering Student at National Institute of Technology (NIT), Kurukshetra (IIOT)
 
-I built AuraStays to solidify my understanding of full-stack MVC architecture, RESTful API design, and complex database relationships. Beyond the standard booking-platform features, I integrated a custom geographic security engine (Impossible Travel detection, risk-based MFA, and an admin monitoring dashboard) alongside third-party APIs (Mapbox, Cloudinary) and AI-powered features — making this project a comprehensive showcase of both modern web development and applied security engineering practices.
+I'm an engineering student with a growing focus on the intersection of **artificial intelligence and cybersecurity** in full-stack web development. My project portfolio reflects that focus: alongside AuraStays, I've built **CyberShield AI**, a full-stack security application, and I completed the **Amazon ML Summer School 2025**, deepening my grounding in applied machine learning.
+
+AuraStays is the culmination of that interest — I built it to go far beyond standard full-stack MVC architecture and RESTful API design, layering in a custom geographic security engine (Impossible Travel detection, risk-based MFA, and an admin monitoring dashboard), a 5-layer OWASP-aligned defense architecture, an enterprise-grade Jest/Playwright testing suite, and a fully automated CI/CD pipeline via GitHub Actions. Combined with third-party integrations (Mapbox, Cloudinary) and AI-powered features, it's a comprehensive showcase of modern web development practiced with the rigor of applied security engineering and machine learning.
 
 - [Connect with me on LinkedIn](https://www.linkedin.com/in/pratham-sharma-0b3140280)
 - [Check out my GitHub Portfolio](https://github.com/Prathamlm30)
